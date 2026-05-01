@@ -1,0 +1,32 @@
+name: Refresh Artist Cache
+
+on:
+  schedule:
+    # Every Sunday at 03:00 UTC
+    - cron: "0 3 * * 0"
+  workflow_dispatch:  # allow manual trigger from GitHub UI
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run cache refresh script
+        env:
+          LASTFM_API_KEY:       ${{ secrets.LASTFM_API_KEY }}
+          SETLISTFM_API_KEY:    ${{ secrets.SETLISTFM_API_KEY }}
+          TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
+          YOUTUBE_API_KEY:      ${{ secrets.YOUTUBE_API_KEY }}
+          DATABASE_URL:         ${{ secrets.DATABASE_URL }}
+        run: python backend/scripts/refresh_cache.py

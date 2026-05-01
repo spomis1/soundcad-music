@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArtistRadar — Music Industry Intelligence</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">ArtistRadar</span>
+    </div>
+    <p class="tagline">Music Industry Intelligence</p>
+  </header>
+
+  <!-- Search -->
+  <section class="search-section">
+    <div class="search-box">
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Search any artist... (e.g. The Weeknd, Rosalía, Bad Bunny)"
+        autocomplete="off"
+      />
+      <button id="search-btn">Analyze</button>
+    </div>
+    <div id="autocomplete-list" class="autocomplete-list hidden"></div>
+    <p id="search-hint" class="search-hint">
+      Live data from Last.fm · Setlist.fm · Ticketmaster · YouTube
+    </p>
+  </section>
+
+  <!-- Loading state -->
+  <div id="loading" class="loading hidden">
+    <div class="spinner"></div>
+    <p>Fetching data from 4 sources...</p>
+  </div>
+
+  <!-- Error state -->
+  <div id="error-box" class="error-box hidden"></div>
+
+  <!-- Dashboard (hidden until search) -->
+  <main id="dashboard" class="hidden">
+
+    <!-- Artist Header -->
+    <section class="artist-header">
+      <img id="artist-img" src="" alt="" class="artist-avatar" />
+      <div class="artist-meta">
+        <h1 id="artist-name"></h1>
+        <div class="tags" id="artist-tags"></div>
+        <div class="stats-row">
+          <div class="stat">
+            <span class="stat-val" id="stat-listeners"></span>
+            <span class="stat-label">Global Listeners</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val" id="stat-plays"></span>
+            <span class="stat-label">All-Time Plays</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val" id="stat-shows"></span>
+            <span class="stat-label">Concerts on Record</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val" id="stat-trending"></span>
+            <span class="stat-label">Trending Countries</span>
+          </div>
+        </div>
+      </div>
+      <!-- Momentum Badge -->
+      <div class="momentum-badge" id="momentum-badge">
+        <div class="momentum-label" id="momentum-label"></div>
+        <div class="momentum-score" id="momentum-score"></div>
+        <div class="momentum-bar-wrap">
+          <div class="momentum-bar" id="momentum-bar"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Grid layout -->
+    <div class="grid">
+
+      <!-- Fan Map -->
+      <div class="card card-wide">
+        <h2 class="card-title">Fan Concentration by Country</h2>
+        <div id="fan-map"></div>
+        <p class="card-note">Based on Last.fm listener rankings · darker = stronger presence</p>
+      </div>
+
+      <!-- Tour Timeline chart -->
+      <div class="card">
+        <h2 class="card-title">Touring History</h2>
+        <canvas id="tour-chart"></canvas>
+      </div>
+
+      <!-- YouTube presence -->
+      <div class="card">
+        <h2 class="card-title">YouTube Trending Regions</h2>
+        <div id="yt-regions"></div>
+        <div class="yt-videos" id="yt-videos"></div>
+      </div>
+
+      <!-- Upcoming Shows -->
+      <div class="card card-wide">
+        <h2 class="card-title">Upcoming Shows</h2>
+        <div id="upcoming-list" class="upcoming-list"></div>
+      </div>
+
+      <!-- Recent Concerts map -->
+      <div class="card card-wide">
+        <h2 class="card-title">Recent Concert Locations</h2>
+        <div id="concert-map"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>
+      Built with Last.fm · Setlist.fm · Ticketmaster · YouTube Data API |
+      <a href="https://github.com/spomis1/artist-radar" target="_blank">GitHub</a>
+    </p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
