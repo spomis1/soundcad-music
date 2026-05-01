@@ -1,6 +1,7 @@
 // ── Config ──────────────────────────────────────────────────────────────────
 // Change this to your Railway backend URL when deployed.
-const API_BASE = window.location.hostname === "localhost"
+const _h = window.location.hostname;
+const API_BASE = (_h === "localhost" || _h === "" || _h === "127.0.0.1")
   ? "http://localhost:8000"
   : "https://YOUR-RAILWAY-APP.up.railway.app";  // replace after deploy
 
@@ -280,18 +281,7 @@ async function doSearch() {
   hideEl("error-box");
   showEl("loading");
 
-  // 1. Try demo data first (works offline, no backend needed)
-  const demo = getDemoData(name);
-  if (demo) {
-    await new Promise(r => setTimeout(r, 600)); // small delay for realism
-    hideEl("loading");
-    renderDashboard(demo);
-    showEl("dashboard");
-    $("dashboard").scrollIntoView({ behavior: "smooth" });
-    return;
-  }
-
-  // 2. Try live backend
+  // 1. Try live backend first
   try {
     const res = await fetch(`${API_BASE}/api/artist/${encodeURIComponent(name)}`);
     if (!res.ok) throw new Error(`API returned ${res.status}`);
@@ -299,8 +289,20 @@ async function doSearch() {
     hideEl("loading");
     renderDashboard(data);
     showEl("dashboard");
+    setTimeout(() => { if (fanMap) fanMap.invalidateSize(); if (concertMap) concertMap.invalidateSize(); }, 150);
     $("dashboard").scrollIntoView({ behavior: "smooth" });
+    return;
   } catch (err) {
+    // 2. Fall back to demo data if backend unavailable
+    const demo = getDemoData(name);
+    if (demo) {
+      hideEl("loading");
+      renderDashboard(demo);
+      showEl("dashboard");
+      setTimeout(() => { if (fanMap) fanMap.invalidateSize(); if (concertMap) concertMap.invalidateSize(); }, 150);
+      $("dashboard").scrollIntoView({ behavior: "smooth" });
+      return;
+    }
     hideEl("loading");
     const box = $("error-box");
     box.innerHTML = `No demo data for <b>"${name}"</b>. Try: <em>The Weeknd</em>, <em>Bad Bunny</em>, <em>Taylor Swift</em> or <em>Rosalía</em>.<br><small style="opacity:.6">Live search requires the backend running.</small>`;
@@ -329,7 +331,7 @@ function renderDashboard(d) {
   renderTourChart(d.tour_timeline || []);
   renderYoutube(d.trending_regions || [], d.top_videos || []);
   renderUpcoming(d.upcoming_events || []);
-  renderConcertMap(d.recent_concerts || []);
+  renderConcertMap(d.upcoming_events || []);
 }
 
 // ── Momentum ──────────────────────────────────────────────────────────────────
@@ -506,7 +508,7 @@ function renderConcertMap(concerts) {
       weight: 1,
       fillOpacity: 0.7,
     })
-    .bindPopup(`<b>${c.venue_name || c.city}</b><br>${c.date}${c.tour_name ? `<br>${c.tour_name}` : ""}`)
+    .bindPopup(`<b>${c.venue_name || c.city}</b><br>${c.city}, ${c.country || ""}<br>${c.date}${c.ticket_url ? `<br><a href="${c.ticket_url}" target="_blank">🎟 Tickets</a>` : ""}`)
     .addTo(concertMap);
   });
 }

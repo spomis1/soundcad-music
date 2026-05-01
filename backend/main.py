@@ -4,6 +4,9 @@ import os
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import asyncpg
@@ -166,7 +169,7 @@ async def get_artist(artist_name: str):
     if row:
         age_days = (datetime.now(timezone.utc) - row["cached_at"]).days
         if age_days < CACHE_TTL_DAYS:
-            return row["data"]
+            return json.loads(row["data"])
 
     # Fetch fresh
     try:
