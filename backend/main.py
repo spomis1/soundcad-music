@@ -11,7 +11,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import asyncpg
 
-from services.lastfm import get_artist_info
+from services.lastfm import get_artist_info, get_similar_artists
 from services.setlistfm import get_setlists, build_tour_timeline
 from services.ticketmaster import get_upcoming_events
 from services.youtube import get_artist_youtube_summary
@@ -71,30 +71,29 @@ CACHE_TTL_DAYS = 7
 # ---------------------------------------------------------------------------
 
 def compute_momentum(
-    listeners: int,
-    country_count: int,
+    spotify_followers: int,
+    spotify_popularity: int,
+    upcoming_count: int,
     tour_timeline: list[dict],
-    trending_region_count: int,
 ) -> MomentumScore:
     """
-    Simple composite score 0-100 based on:
-    - Global listener count (normalized)
-    - Number of countries with presence
-    - Venue size trend across tours (growing = better)
-    - YouTube trending regions
+    Composite score 0-100 based on:
+    - Spotify followers (50M = full score, max 30 pts)
+    - Spotify popularity 0-100 (max 30 pts)
+    - Upcoming shows scheduled (5+ = full score, max 20 pts)
+    - Recent tour activity: show count in latest tour (50+ = full score, max 20 pts)
     """
-    listener_score = min(listeners / 5_000_000, 1.0) * 30      # max 30 pts
-    country_score = min(country_count / 20, 1.0) * 20           # max 20 pts
-    youtube_score = min(trending_region_count / 10, 1.0) * 25   # max 25 pts
+    followers_score = min(spotify_followers / 50_000_000, 1.0) * 30   # max 30 pts
+    popularity_score = (spotify_popularity / 100) * 30                  # max 30 pts
+    upcoming_score = min(upcoming_count / 5, 1.0) * 20                  # max 20 pts
 
-    # Tour activity: recent tours score higher
     tour_score = 0.0
     if tour_timeline:
         latest = tour_timeline[-1]
         show_count = latest.get("show_count", 0)
-        tour_score = min(show_count / 50, 1.0) * 25             # max 25 pts
+        tour_score = min(show_count / 50, 1.0) * 20                    # max 20 pts
 
-    total = listener_score + country_score + youtube_score + tour_score
+    total = followers_score + popularity_score + upcoming_score + tour_score
 
     if total >= 60:
         label = "Rising"
@@ -107,9 +106,9 @@ def compute_momentum(
         score=round(total, 1),
         label=label,
         factors={
-            "listener_score": round(listener_score, 1),
-            "country_score": round(country_score, 1),
-            "youtube_score": round(youtube_score, 1),
+            "followers_score": round(followers_score, 1),
+            "popularity_score": round(popularity_score, 1),
+            "upcoming_score": round(upcoming_score, 1),
             "tour_score": round(tour_score, 1),
         },
     )
@@ -120,12 +119,13 @@ def compute_momentum(
 # ---------------------------------------------------------------------------
 
 async def fetch_artist_data(artist_name: str) -> dict:
-    info, setlists, upcoming, yt, spotify = await asyncio.gather(
+    info, setlists, upcoming, yt, spotify, similar_lfm = await asyncio.gather(
         get_artist_info(artist_name),
         get_setlists(artist_name),
         get_upcoming_events(artist_name),
         get_artist_youtube_summary(artist_name),
         get_spotify_data(artist_name),
+        get_similar_artists(artist_name),
     )
     tour_timeline = build_tour_timeline(setlists)
 
@@ -138,11 +138,14 @@ async def fetch_artist_data(artist_name: str) -> dict:
     popularity = spotify.get("popularity", 0)
     market_count = spotify.get("market_count", 0)
 
+    # Related artists: Spotify (deprecated in 2024) → Last.fm fallback
+    related_artists = spotify.get("related_artists") or similar_lfm
+
     momentum = compute_momentum(
-        listeners=info.get("listeners", 0),
-        country_count=market_count,
+        spotify_followers=followers,
+        spotify_popularity=popularity,
+        upcoming_count=len(upcoming),
         tour_timeline=tour_timeline,
-        trending_region_count=yt.get("trending_region_count", 0),
     )
     return {
         "name": name,
@@ -154,8 +157,9 @@ async def fetch_artist_data(artist_name: str) -> dict:
         "spotify_followers": followers,
         "spotify_popularity": popularity,
         "spotify_market_count": market_count,
-        "related_artists": spotify.get("related_artists", []),
+        "related_artists": related_artists,
         "top_tracks": spotify.get("top_tracks", []),
+        "albums": spotify.get("albums", []),
         "country_presence": country_presence,
         "recent_concerts": setlists[:50],
         "tour_timeline": tour_timeline,
@@ -172,14 +176,6 @@ async def fetch_artist_data(artist_name: str) -> dict:
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
-
-@app.get("/debug/env")
-async def debug_env():
-    return {
-        "SPOTIFY_CLIENT_ID": bool(os.getenv("SPOTIFY_CLIENT_ID")),
-        "SPOTIFY_CLIENT_SECRET": bool(os.getenv("SPOTIFY_CLIENT_SECRET")),
-        "LASTFM_API_KEY": bool(os.getenv("LASTFM_API_KEY")),
-    }
 
 
 @app.get("/api/artist/{artist_name}", response_model=ArtistResponse)

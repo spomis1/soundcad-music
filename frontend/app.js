@@ -58,7 +58,7 @@ const DEMO_DATA = {
       { region: "AU", rank: 8, video_title: "Blinding Lights" },
     ],
     trending_region_count: 6, total_views_top5: 2090000000,
-    momentum: { score: 84.5, label: "Rising", factors: { listener_score: 30, country_score: 18, youtube_score: 22.5, tour_score: 14 } },
+    momentum: { score: 84.5, label: "Rising", factors: { followers_score: 30, popularity_score: 27, upcoming_score: 20, tour_score: 7.5 } },
     cached_at: "2025-05-01T00:00:00Z",
   },
   "bad bunny": {
@@ -107,7 +107,7 @@ const DEMO_DATA = {
       { region: "IT", rank: 9, video_title: "Me Porto Bonito" },
     ],
     trending_region_count: 8, total_views_top5: 1990000000,
-    momentum: { score: 91.2, label: "Rising", factors: { listener_score: 30, country_score: 20, youtube_score: 25, tour_score: 16.2 } },
+    momentum: { score: 91.2, label: "Rising", factors: { followers_score: 30, popularity_score: 30, upcoming_score: 15, tour_score: 16.2 } },
     cached_at: "2025-05-01T00:00:00Z",
   },
   "taylor swift": {
@@ -155,7 +155,7 @@ const DEMO_DATA = {
       { region: "SE", rank: 4, video_title: "Blank Space" },
     ],
     trending_region_count: 7, total_views_top5: 4010000000,
-    momentum: { score: 78.3, label: "Rising", factors: { listener_score: 30, country_score: 20, youtube_score: 18.3, tour_score: 10 } },
+    momentum: { score: 78.3, label: "Rising", factors: { followers_score: 30, popularity_score: 28, upcoming_score: 10, tour_score: 10 } },
     cached_at: "2025-05-01T00:00:00Z",
   },
   "rosalia": {
@@ -196,7 +196,7 @@ const DEMO_DATA = {
       { region: "US", rank: 18, video_title: "Con Altura" },
     ],
     trending_region_count: 4, total_views_top5: 445000000,
-    momentum: { score: 62.1, label: "Rising", factors: { listener_score: 21, country_score: 14, youtube_score: 12.1, tour_score: 15 } },
+    momentum: { score: 62.1, label: "Rising", factors: { followers_score: 18, popularity_score: 19, upcoming_score: 10, tour_score: 15 } },
     cached_at: "2025-05-01T00:00:00Z",
   },
 };
@@ -223,12 +223,8 @@ const fmt = (n) => n >= 1_000_000
 
 const $ = (id) => document.getElementById(id);
 
-let fanMap = null;
-let concertMap = null;
-let tourChart = null;
-
-function showEl(id)  { $(id).classList.remove("hidden"); }
-function hideEl(id)  { $(id).classList.add("hidden"); }
+function showEl(id)  { const el = $(id); if (el) el.classList.remove("hidden"); }
+function hideEl(id)  { const el = $(id); if (el) el.classList.add("hidden"); }
 
 // ── Autocomplete ─────────────────────────────────────────────────────────────
 let cachedArtists = [];
@@ -289,7 +285,6 @@ async function doSearch() {
     hideEl("loading");
     renderDashboard(data);
     showEl("dashboard");
-    setTimeout(() => { if (fanMap) fanMap.invalidateSize(); if (concertMap) concertMap.invalidateSize(); }, 150);
     $("dashboard").scrollIntoView({ behavior: "smooth" });
     return;
   } catch (err) {
@@ -299,20 +294,19 @@ async function doSearch() {
       hideEl("loading");
       renderDashboard(demo);
       showEl("dashboard");
-      setTimeout(() => { if (fanMap) fanMap.invalidateSize(); if (concertMap) concertMap.invalidateSize(); }, 150);
       $("dashboard").scrollIntoView({ behavior: "smooth" });
       return;
     }
     hideEl("loading");
     const box = $("error-box");
-    box.innerHTML = `No demo data for <b>"${name}"</b>. Try: <em>The Weeknd</em>, <em>Bad Bunny</em>, <em>Taylor Swift</em> or <em>Rosalía</em>.<br><small style="opacity:.6">Live search requires the backend running.</small>`;
+    box.innerHTML = `No results for <b>"${name}"</b>. Try: <em>The Weeknd</em>, <em>Bad Bunny</em>, <em>Taylor Swift</em> or <em>Rosalía</em>.<br><small style="opacity:.6">Live search requires the backend running on localhost:8000.</small>`;
     showEl("error-box");
   }
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderDashboard(d) {
-  // Artist header
+  // Artist photo
   const img = $("artist-img");
   if (d.image_url) { img.src = d.image_url; img.style.display = "block"; }
   else { img.style.display = "none"; }
@@ -321,150 +315,54 @@ function renderDashboard(d) {
   $("artist-tags").innerHTML = (d.tags || []).slice(0, 5)
     .map((t) => `<span class="tag">${t}</span>`).join("");
 
-  // Stats — prefer Spotify followers over Last.fm listeners
-  const followers = d.spotify_followers || d.listeners || 0;
-  $("stat-listeners").textContent = fmt(followers);
-  $("stat-listeners").nextElementSibling.textContent =
-    d.spotify_followers ? "SPOTIFY FOLLOWERS" : "GLOBAL LISTENERS";
-  $("stat-plays").textContent     = d.spotify_popularity
-    ? `${d.spotify_popularity}/100`
-    : fmt(d.playcount || 0);
-  $("stat-plays").nextElementSibling.textContent =
-    d.spotify_popularity ? "POPULARITY" : "ALL-TIME PLAYS";
-  $("stat-shows").textContent     = (d.recent_concerts || []).length;
-  $("stat-trending").textContent  = d.trending_region_count || 0;
-
-  // Related artists
-  if (d.related_artists && d.related_artists.length) {
-    renderRelatedArtists(d.related_artists);
-  }
+  // Stats
+  $("stat-listeners").textContent = fmt(d.spotify_followers || d.listeners || 0);
+  $("stat-listeners-label").textContent = d.spotify_followers ? "SPOTIFY FOLLOWERS" : "GLOBAL LISTENERS";
+  $("stat-plays").textContent = d.spotify_popularity ? `${d.spotify_popularity}/100` : fmt(d.playcount || 0);
+  $("stat-plays-label").textContent = d.spotify_popularity ? "SPOTIFY POPULARITY" : "ALL-TIME PLAYS";
+  $("stat-shows").textContent = (d.upcoming_events || []).length;
+  $("stat-albums").textContent = (d.albums || []).length || "—";
 
   renderMomentum(d.momentum);
-  renderFanMap(d.country_presence || []);
-  renderTourChart(d.tour_timeline || []);
-  renderYoutube(d.trending_regions || [], d.top_videos || []);
+  renderYoutube(d.top_videos || []);
+  renderAlbums(d.albums || []);
   renderUpcoming(d.upcoming_events || []);
-  renderConcertMap(d.upcoming_events || []);
+  renderRelatedArtists(d.related_artists || []);
 }
 
 // ── Momentum ──────────────────────────────────────────────────────────────────
 function renderMomentum(m) {
   if (!m) return;
-  const badge = $("momentum-badge");
-  const label = $("momentum-label");
-  const score = $("momentum-score");
-  const bar   = $("momentum-bar");
-
   const cls = m.label.toLowerCase();
-  label.textContent = (cls === "rising" ? "▲ " : cls === "declining" ? "▼ " : "→ ") + m.label;
-  label.className = `momentum-label ${cls}`;
-  score.textContent = m.score;
-  bar.className = `momentum-bar ${cls}`;
-  bar.style.width = `${m.score}%`;
+  const icon = cls === "rising" ? "▲" : cls === "declining" ? "▼" : "→";
+
+  $("momentum-label").textContent = `${icon} ${m.label}`;
+  $("momentum-label").className = `momentum-label ${cls}`;
+  $("momentum-score").textContent = m.score;
+  $("momentum-bar").className = `momentum-bar ${cls}`;
+  $("momentum-bar").style.width = `${m.score}%`;
+
+  // Factors breakdown
+  const f = m.factors || {};
+  const factorsEl = $("momentum-factors");
+  if (factorsEl) {
+    factorsEl.innerHTML = `
+      <div class="mf-row"><span>Spotify followers</span><span>${f.followers_score ?? f.listener_score ?? "—"}/30</span></div>
+      <div class="mf-row"><span>Spotify popularity</span><span>${f.popularity_score ?? f.country_score ?? "—"}/30</span></div>
+      <div class="mf-row"><span>Upcoming shows</span><span>${f.upcoming_score ?? f.youtube_score ?? "—"}/20</span></div>
+      <div class="mf-row"><span>Tour activity</span><span>${f.tour_score ?? "—"}/20</span></div>
+    `;
+  }
 }
 
-// ── Fan Map ───────────────────────────────────────────────────────────────────
-function renderFanMap(presence) {
-  if (fanMap) { fanMap.remove(); fanMap = null; }
-  fanMap = L.map("fan-map", { zoomControl: true, scrollWheelZoom: false })
-    .setView([20, 0], 2);
-
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap",
-  }).addTo(fanMap);
-
-  if (!presence.length) return;
-  const maxRank = Math.max(...presence.map((p) => p.rank || 50));
-
-  presence.forEach((p) => {
-    const coords = COUNTRY_COORDS[p.country];
-    if (!coords) return;
-    const intensity = 1 - (p.rank - 1) / maxRank;
-    const radius = 20 + intensity * 40;
-    L.circleMarker(coords, {
-      radius,
-      fillColor: "#a855f7",
-      color: "#7c3aed",
-      weight: 1,
-      fillOpacity: 0.3 + intensity * 0.5,
-    })
-    .bindPopup(`<b>${p.country}</b><br>Chart rank: #${p.rank}`)
-    .addTo(fanMap);
-  });
-}
-
-// ── Tour Timeline Chart ───────────────────────────────────────────────────────
-function renderTourChart(timeline) {
-  if (tourChart) { tourChart.destroy(); tourChart = null; }
-  if (!timeline.length) {
-    document.getElementById("tour-chart").parentElement.innerHTML +=
-      '<p style="color:var(--muted);font-size:.85rem;margin-top:8px">No tour data available.</p>';
+// ── YouTube Top Videos ────────────────────────────────────────────────────────
+function renderYoutube(videos) {
+  const el = $("yt-videos");
+  if (!videos.length) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:.85rem">No YouTube videos found.</p>';
     return;
   }
-
-  const labels = timeline.map((t) => t.tour.length > 20 ? t.tour.slice(0, 20) + "…" : t.tour);
-  const shows  = timeline.map((t) => t.show_count);
-  const countries = timeline.map((t) => t.countries.length);
-
-  tourChart = new Chart($("tour-chart"), {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "Shows",
-          data: shows,
-          backgroundColor: "rgba(124, 58, 237, 0.7)",
-          borderRadius: 4,
-          yAxisID: "y",
-        },
-        {
-          label: "Countries",
-          data: countries,
-          type: "line",
-          borderColor: "#a855f7",
-          backgroundColor: "transparent",
-          pointBackgroundColor: "#a855f7",
-          tension: 0.4,
-          yAxisID: "y1",
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { labels: { color: "#e2e8f0", font: { size: 11 } } },
-      },
-      scales: {
-        x: { ticks: { color: "#64748b", font: { size: 10 } }, grid: { color: "#2a2a38" } },
-        y: {
-          ticks: { color: "#64748b" },
-          grid: { color: "#2a2a38" },
-          title: { display: true, text: "Shows", color: "#64748b" },
-        },
-        y1: {
-          position: "right",
-          ticks: { color: "#64748b" },
-          grid: { drawOnChartArea: false },
-          title: { display: true, text: "Countries", color: "#64748b" },
-        },
-      },
-    },
-  });
-}
-
-// ── YouTube ───────────────────────────────────────────────────────────────────
-function renderYoutube(trending, videos) {
-  const regionsEl = $("yt-regions");
-  if (trending.length) {
-    regionsEl.innerHTML = trending
-      .map((r) => `<span class="region-chip">${r.region} #${r.rank}</span>`)
-      .join("");
-  } else {
-    regionsEl.innerHTML = '<span style="color:var(--muted);font-size:.85rem">Not trending in tracked regions.</span>';
-  }
-
-  $("yt-videos").innerHTML = videos.slice(0, 3).map((v) => `
+  el.innerHTML = videos.slice(0, 5).map((v) => `
     <a class="yt-video-item" href="https://youtube.com/watch?v=${v.video_id}" target="_blank" rel="noopener">
       <img class="yt-thumb" src="${v.thumbnail || ""}" alt="" />
       <div class="yt-meta">
@@ -475,64 +373,54 @@ function renderYoutube(trending, videos) {
   `).join("");
 }
 
+// ── Albums ────────────────────────────────────────────────────────────────────
+function renderAlbums(albums) {
+  if (!albums.length) { hideEl("albums-section"); return; }
+  $("albums-list").innerHTML = albums.map(a => `
+    <div class="album-card">
+      ${a.image ? `<img class="album-cover" src="${a.image}" alt="${a.name}" />` : '<div class="album-cover album-no-img">♪</div>'}
+      <div class="album-name">${a.name}</div>
+      <div class="album-meta">${a.year || ""}${a.total_tracks ? ` · ${a.total_tracks} tracks` : ""}</div>
+    </div>
+  `).join("");
+  showEl("albums-section");
+}
+
 // ── Upcoming Shows ────────────────────────────────────────────────────────────
 function renderUpcoming(events) {
   const el = $("upcoming-list");
   if (!events.length) {
-    el.innerHTML = '<p class="no-shows">No upcoming shows found via Ticketmaster.</p>';
+    el.innerHTML = '<p class="no-shows">No upcoming shows found.</p>';
     return;
   }
-  el.innerHTML = events.slice(0, 12).map((ev) => {
+  el.innerHTML = events.slice(0, 15).map((ev) => {
     const dateStr = ev.date
       ? new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
       : "TBA";
-    const price = ev.min_price
-      ? `From ${ev.currency} ${ev.min_price}`
-      : "";
+    const mapsUrl = ev.venue_name && ev.city
+      ? `https://www.google.com/maps/search/${encodeURIComponent(ev.venue_name + " " + ev.city)}`
+      : null;
+    const price = ev.min_price ? `From ${ev.currency} ${ev.min_price}` : "";
     return `
       <div class="show-card">
         <div class="show-date">${dateStr}</div>
         <div class="show-venue">${ev.venue_name || "—"}</div>
         <div class="show-location">${[ev.city, ev.country].filter(Boolean).join(", ")}</div>
-        <div class="show-capacity">~${fmt(ev.estimated_capacity)} capacity</div>
         ${price ? `<div class="show-price">${price}</div>` : ""}
-        ${ev.ticket_url ? `<a class="show-ticket-btn" href="${ev.ticket_url}" target="_blank" rel="noopener">Get Tickets →</a>` : ""}
+        <div class="show-actions">
+          ${mapsUrl ? `<a class="show-maps-btn" href="${mapsUrl}" target="_blank" rel="noopener">📍 Maps</a>` : ""}
+          ${ev.ticket_url ? `<a class="show-ticket-btn" href="${ev.ticket_url}" target="_blank" rel="noopener">🎟 Tickets</a>` : ""}
+        </div>
       </div>
     `;
   }).join("");
 }
 
-// ── Concert Map ───────────────────────────────────────────────────────────────
-function renderConcertMap(concerts) {
-  if (concertMap) { concertMap.remove(); concertMap = null; }
-  concertMap = L.map("concert-map", { zoomControl: true, scrollWheelZoom: false })
-    .setView([20, 0], 2);
-
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap",
-  }).addTo(concertMap);
-
-  concerts.slice(0, 100).forEach((c) => {
-    if (!c.lat || !c.lon) return;
-    L.circleMarker([c.lat, c.lon], {
-      radius: 5,
-      fillColor: "#7c3aed",
-      color: "#a855f7",
-      weight: 1,
-      fillOpacity: 0.7,
-    })
-    .bindPopup(`<b>${c.venue_name || c.city}</b><br>${c.city}, ${c.country || ""}<br>${c.date}${c.ticket_url ? `<br><a href="${c.ticket_url}" target="_blank">🎟 Tickets</a>` : ""}`)
-    .addTo(concertMap);
-  });
-}
-
-// ── Init ──────────────────────────────────────────────────────────────────────
 // ── Related Artists ───────────────────────────────────────────────────────────
 function renderRelatedArtists(artists) {
-  const el = $("related-artists");
-  if (!el) return;
-  el.innerHTML = artists.map(a => `
-    <div class="related-card" onclick="document.getElementById('search-input').value='${a.name}';doSearch()">
+  if (!artists.length) { hideEl("related-section"); return; }
+  $("related-artists").innerHTML = artists.map(a => `
+    <div class="related-card" onclick="$('search-input').value='${a.name.replace(/'/g,"\\'")}';doSearch()">
       <span class="related-name">${a.name}</span>
       <span class="related-pop">${a.popularity}/100</span>
     </div>

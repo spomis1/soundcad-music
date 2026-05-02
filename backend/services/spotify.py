@@ -54,7 +54,7 @@ async def get_artist_data(name: str) -> dict:
     token = await _get_token()
 
     async with httpx.AsyncClient() as client:
-        # Top tracks to get markets (countries where the artist is available)
+        # Top tracks
         r = await client.get(
             f"https://api.spotify.com/v1/artists/{spotify_id}/top-tracks",
             params={"market": "US"},
@@ -68,6 +68,14 @@ async def get_artist_data(name: str) -> dict:
             headers={"Authorization": f"Bearer {token}"},
         )
         related = r2.json().get("artists", []) if r2.status_code == 200 else []
+
+        # Albums (only full albums + singles, exclude compilations)
+        r3 = await client.get(
+            f"https://api.spotify.com/v1/artists/{spotify_id}/albums",
+            params={"include_groups": "album,single", "market": "US", "limit": 50},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        albums_raw = r3.json().get("items", []) if r3.status_code == 200 else []
 
     # Build country presence from available_markets of top tracks
     all_markets: set[str] = set()
@@ -104,6 +112,31 @@ async def get_artist_data(name: str) -> dict:
                 "listeners": None,
             })
 
+    # Deduplicate albums by name, sort by date desc, full albums first (max 12)
+    seen_names = set()
+    albums_full = []
+    albums_single = []
+    for a in sorted(albums_raw, key=lambda x: x.get("release_date", ""), reverse=True):
+        aname = a.get("name", "")
+        if aname.lower() in seen_names:
+            continue
+        seen_names.add(aname.lower())
+        img = a["images"][0]["url"] if a.get("images") else None
+        entry = {
+            "name": aname,
+            "year": a.get("release_date", "")[:4],
+            "total_tracks": a.get("total_tracks"),
+            "image": img,
+            "album_type": a.get("album_type"),
+        }
+        if a.get("album_type") == "album":
+            albums_full.append(entry)
+        else:
+            albums_single.append(entry)
+
+    # Show full albums first, pad with recent singles up to 12 total
+    albums = (albums_full + albums_single)[:12]
+
     image_url = None
     if artist.get("images"):
         image_url = artist["images"][0]["url"]
@@ -129,4 +162,5 @@ async def get_artist_data(name: str) -> dict:
             }
             for t in top_tracks[:5]
         ],
+        "albums": albums,
     }

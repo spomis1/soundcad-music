@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ArtistRadar — Music Industry Intelligence</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <title>SoundCard Music — Artist Intelligence</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -12,7 +11,7 @@
   <header>
     <div class="logo">
       <span class="logo-icon">◈</span>
-      <span class="logo-text">ArtistRadar</span>
+      <span class="logo-text">SoundCard Music</span>
     </div>
     <p class="tagline">Music Industry Intelligence</p>
   </header>
@@ -30,14 +29,14 @@
     </div>
     <div id="autocomplete-list" class="autocomplete-list hidden"></div>
     <p id="search-hint" class="search-hint">
-      Live data from Last.fm · Setlist.fm · Ticketmaster · YouTube
+      Live data from Spotify · Last.fm · Setlist.fm · Ticketmaster · YouTube
     </p>
   </section>
 
   <!-- Loading state -->
   <div id="loading" class="loading hidden">
     <div class="spinner"></div>
-    <p>Fetching data from 4 sources...</p>
+    <p>Fetching data from 5 sources...</p>
   </div>
 
   <!-- Error state -->
@@ -55,65 +54,53 @@
         <div class="stats-row">
           <div class="stat">
             <span class="stat-val" id="stat-listeners"></span>
-            <span class="stat-label">Global Listeners</span>
+            <span class="stat-label" id="stat-listeners-label">Spotify Followers</span>
           </div>
           <div class="stat">
             <span class="stat-val" id="stat-plays"></span>
-            <span class="stat-label">All-Time Plays</span>
+            <span class="stat-label" id="stat-plays-label">Popularity</span>
           </div>
           <div class="stat">
             <span class="stat-val" id="stat-shows"></span>
-            <span class="stat-label">Concerts on Record</span>
+            <span class="stat-label">Upcoming Shows</span>
           </div>
           <div class="stat">
-            <span class="stat-val" id="stat-trending"></span>
-            <span class="stat-label">Trending Countries</span>
+            <span class="stat-val" id="stat-albums"></span>
+            <span class="stat-label">Albums</span>
           </div>
         </div>
       </div>
       <!-- Momentum Badge -->
       <div class="momentum-badge" id="momentum-badge">
         <div class="momentum-label" id="momentum-label"></div>
+        <div class="momentum-title">Momentum Score</div>
         <div class="momentum-score" id="momentum-score"></div>
         <div class="momentum-bar-wrap">
           <div class="momentum-bar" id="momentum-bar"></div>
         </div>
+        <div class="momentum-factors" id="momentum-factors"></div>
       </div>
     </section>
 
     <!-- Grid layout -->
     <div class="grid">
 
-      <!-- Fan Map -->
+      <!-- Top Videos -->
       <div class="card card-wide">
-        <h2 class="card-title">Fan Concentration by Country</h2>
-        <div id="fan-map"></div>
-        <p class="card-note">Based on Last.fm listener rankings · darker = stronger presence</p>
-      </div>
-
-      <!-- Tour Timeline chart -->
-      <div class="card">
-        <h2 class="card-title">Touring History</h2>
-        <canvas id="tour-chart"></canvas>
-      </div>
-
-      <!-- YouTube presence -->
-      <div class="card">
-        <h2 class="card-title">YouTube Trending Regions</h2>
-        <div id="yt-regions"></div>
+        <h2 class="card-title">Top Videos on YouTube</h2>
         <div class="yt-videos" id="yt-videos"></div>
+      </div>
+
+      <!-- Albums -->
+      <div class="card card-wide hidden" id="albums-section">
+        <h2 class="card-title">Discography</h2>
+        <div id="albums-list" class="albums-grid"></div>
       </div>
 
       <!-- Upcoming Shows -->
       <div class="card card-wide">
         <h2 class="card-title">Upcoming Shows</h2>
         <div id="upcoming-list" class="upcoming-list"></div>
-      </div>
-
-      <!-- Recent Concerts map -->
-      <div class="card card-wide">
-        <h2 class="card-title">Upcoming Shows Map</h2>
-        <div id="concert-map"></div>
       </div>
 
       <!-- Related Artists -->
@@ -128,12 +115,11 @@
   <!-- Footer -->
   <footer>
     <p>
-      Built with Last.fm · Setlist.fm · Ticketmaster · YouTube Data API |
-      <a href="https://github.com/spomis1/artist-radar" target="_blank">GitHub</a>
+      Data from Spotify · Last.fm · Setlist.fm · Ticketmaster · YouTube |
+      <a href="https://github.com/spomis1/soundcad-music" target="_blank">GitHub</a>
     </p>
   </footer>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
 </body>

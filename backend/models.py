@@ -79,6 +79,14 @@ class TopTrack(BaseModel):
     preview_url: Optional[str] = None
 
 
+class Album(BaseModel):
+    name: str
+    year: Optional[str] = None
+    total_tracks: Optional[int] = None
+    image: Optional[str] = None
+    album_type: Optional[str] = None
+
+
 class ArtistResponse(BaseModel):
     name: str
     listeners: int = 0
@@ -92,6 +100,7 @@ class ArtistResponse(BaseModel):
     spotify_market_count: int = 0
     related_artists: list[RelatedArtist] = []
     top_tracks: list[TopTrack] = []
+    albums: list[Album] = []
     # Geo presence
     country_presence: list[CountryPresence] = []
     # Tour data

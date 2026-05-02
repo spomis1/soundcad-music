@@ -78,6 +78,22 @@ async def get_weekly_chart_trend(artist_name: str) -> list[dict]:
     return []
 
 
+async def get_similar_artists(artist_name: str) -> list[dict]:
+    """Last.fm similar artists as fallback when Spotify's endpoint is unavailable."""
+    async with httpx.AsyncClient(timeout=10) as client:
+        r = await client.get(BASE_URL, params=_params("artist.getsimilar", artist=artist_name, limit=6))
+        if r.status_code != 200:
+            return []
+        data = r.json()
+        if "error" in data:
+            return []
+        artists = data.get("similarartists", {}).get("artist", [])
+        return [
+            {"name": a["name"], "popularity": int(float(a.get("match", 0)) * 100)}
+            for a in artists[:6]
+        ]
+
+
 async def get_top_artists_global(limit: int = 100) -> list[str]:
     """Used by the weekly cache refresh job."""
     async with httpx.AsyncClient(timeout=10) as client:
