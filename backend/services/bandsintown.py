@@ -1,13 +1,21 @@
+import logging
 import httpx
 
+logger = logging.getLogger(__name__)
+
 BASE_URL = "https://rest.bandsintown.com"
-APP_ID = "soundcard-music"  # can be any string, no auth required
+APP_ID = "soundcard-music"
+
+# NOTE: Bandsintown's public v3 API was restricted in 2024 and now requires
+# approved access. Calls return 403. The service is kept as a no-op so we
+# can re-enable it if access is restored or replaced with another source.
 
 
 async def get_upcoming_events(artist_name: str) -> list[dict]:
     """
-    Fetch upcoming events from Bandsintown (global coverage, no API key needed).
-    Returns same shape as ticketmaster.get_upcoming_events for easy merging.
+    Fetch upcoming events from Bandsintown.
+    Currently returns empty due to API access restrictions (HTTP 403).
+    Ticketmaster covers global events as primary source.
     """
     async with httpx.AsyncClient(timeout=10) as client:
         try:
@@ -15,6 +23,9 @@ async def get_upcoming_events(artist_name: str) -> list[dict]:
                 f"{BASE_URL}/artists/{httpx.URL(artist_name).path}/events",
                 params={"app_id": APP_ID, "date": "upcoming"},
             )
+            if r.status_code == 403:
+                logger.debug("Bandsintown API access denied (403) — using Ticketmaster only")
+                return []
             if r.status_code != 200:
                 return []
             events = r.json()

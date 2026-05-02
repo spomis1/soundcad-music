@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import unicodedata
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
@@ -19,6 +20,62 @@ from services.bandsintown import get_upcoming_events as get_upcoming_bandsintown
 from services.youtube import get_artist_youtube_summary
 from services.spotify import get_artist_data as get_spotify_data
 from models import ArtistResponse, MomentumScore
+
+# ---------------------------------------------------------------------------
+# Event quality filter
+# ---------------------------------------------------------------------------
+
+def _ascii(s: str) -> str:
+    """Lowercase + strip accents for fuzzy comparison."""
+    return unicodedata.normalize("NFD", (s or "").lower()).encode("ascii", "ignore").decode().strip()
+
+
+# Keywords that indicate a themed night / tribute / club event (not real concert)
+_TRIBUTE_KW = frozenset([
+    "night", "tribute", "party", "fiesta", "bash", "takeover",
+    "vs.", " vs ", "dance party", "latin night", "reggaeton night",
+    "dj set", "dj night", "open bar", "brunch", "day party",
+    "halloween", "christmas", "new year", "nye", "pride",
+])
+
+# Minimum estimated venue capacity expected by Spotify popularity tier
+_POP_MIN_CAPACITY = [
+    (90, 8_000),   # popularity ≥ 90 → stadium/arena (8k+)
+    (75, 2_000),   # popularity ≥ 75 → theater/large club (2k+)
+    (60, 500),     # popularity ≥ 60 → mid-size venue (500+)
+]
+
+
+def _is_real_event(ev: dict, artist_name: str, popularity: int) -> bool:
+    """
+    Heuristic filter to remove tribute nights / themed club events.
+    Returns True if the event is likely a real artist performance.
+    """
+    title = ev.get("name", "")
+    norm_title = _ascii(title)
+    norm_artist = _ascii(artist_name)
+
+    # 1. Title starts with the artist name → probably real (tour/show/festival slot)
+    #    But also check the suffix for tribute keywords
+    if norm_title.startswith(norm_artist):
+        suffix = norm_title[len(norm_artist):].strip(" -:")
+        # "Bad Bunny Dance Party" — suffix has tribute word → fake
+        if any(kw in suffix for kw in _TRIBUTE_KW):
+            return False
+        return True
+
+    # 2. Title doesn't start with artist → any tribute keyword = reject
+    if any(kw in norm_title for kw in _TRIBUTE_KW):
+        return False
+
+    # 3. Capacity sanity check: popular artists don't play tiny venues
+    cap = ev.get("estimated_capacity", 1_000)
+    for min_pop, min_cap in _POP_MIN_CAPACITY:
+        if popularity >= min_pop and cap < min_cap:
+            return False
+
+    return True
+
 
 # ---------------------------------------------------------------------------
 # DB helpers
@@ -133,6 +190,7 @@ async def fetch_artist_data(artist_name: str) -> dict:
 
     # MusicBrainz after Spotify so we can pass the canonical name (handles accents)
     canonical = spotify.get("name") or artist_name
+    popularity = spotify.get("popularity", 0)   # needed for event quality filter
     mb = await get_artist_metadata(artist_name, canonical_name=canonical)
 
     # Merge events: Bandsintown first (global) + Ticketmaster (US pricing/links)
@@ -160,7 +218,9 @@ async def fetch_artist_data(artist_name: str) -> dict:
             ev["min_price"] = tm_ev.get("min_price") or ev.get("min_price")
             ev["max_price"] = tm_ev.get("max_price") or ev.get("max_price")
             ev["currency"] = tm_ev.get("currency") or ev.get("currency", "USD")
-        upcoming.append(ev)
+        # Filter out tribute nights and themed club events
+        if _is_real_event(ev, canonical, popularity):
+            upcoming.append(ev)
     upcoming = upcoming[:20]
     tour_timeline = build_tour_timeline(setlists)
 
