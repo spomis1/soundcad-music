@@ -269,12 +269,21 @@ $("search-input").addEventListener("keydown", (e) => {
 });
 
 // ── Main search ───────────────────────────────────────────────────────────────
-async function doSearch() {
+async function doSearch(skipHistory = false) {
   const name = $("search-input").value.trim();
   if (!name) return;
 
+  // Push to browser history so the URL reflects the current artist
+  // and the back button works as expected.
+  if (!skipHistory) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("artist", name);
+    history.pushState({ artist: name }, "", url.toString());
+  }
+
   hideEl("dashboard");
   hideEl("error-box");
+  hideEl("shows-section");
   showEl("loading");
 
   // 1. Try live backend first
@@ -306,10 +315,25 @@ async function doSearch() {
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderDashboard(d) {
-  // Artist photo
+  // Artist photo — show image or initials placeholder
   const img = $("artist-img");
-  if (d.image_url) { img.src = d.image_url; img.style.display = "block"; }
-  else { img.style.display = "none"; }
+  const avatarWrap = img.parentElement;
+  let placeholder = avatarWrap.querySelector(".avatar-placeholder");
+  if (d.image_url) {
+    img.src = d.image_url;
+    img.style.display = "block";
+    if (placeholder) placeholder.remove();
+  } else {
+    img.style.display = "none";
+    if (!placeholder) {
+      placeholder = document.createElement("div");
+      placeholder.className = "avatar-placeholder";
+      avatarWrap.insertBefore(placeholder, img);
+    }
+    // Show first 2 initials of artist name
+    const initials = (d.name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+    placeholder.textContent = initials;
+  }
 
   $("artist-name").textContent = d.name;
 
@@ -567,3 +591,30 @@ function renderRelatedArtists(artists) {
 }
 
 loadAutocomplete();
+
+// ── URL param auto-load ───────────────────────────────────────────────────────
+// If the URL has ?artist=xxx, search automatically on page load.
+// This makes links like index.html?artist=bad+bunny work directly.
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const artist = params.get("artist");
+  if (artist) {
+    $("search-input").value = artist;
+    doSearch(true);  // true = don't push to history (we're already on the right URL)
+  }
+})();
+
+// Handle browser back/forward buttons
+window.addEventListener("popstate", (e) => {
+  const artist = e.state?.artist || new URLSearchParams(window.location.search).get("artist") || "";
+  if (artist) {
+    $("search-input").value = artist;
+    doSearch(true);
+  } else {
+    // Back to homepage (no artist)
+    $("search-input").value = "";
+    hideEl("dashboard");
+    hideEl("error-box");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+});
