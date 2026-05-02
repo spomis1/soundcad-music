@@ -452,9 +452,11 @@ function renderUpcoming(events) {
     return;
   }
   el.innerHTML = events.slice(0, 15).map((ev) => {
-    const dateStr = ev.date
-      ? new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-      : "TBA";
+    // Parse "YYYY-MM-DD" as local date (not UTC) to avoid off-by-one in non-UTC timezones
+    const dateStr = ev.date ? (() => {
+      const [y, m, d] = ev.date.split("-").map(Number);
+      return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    })() : "TBA";
     const mapsUrl = ev.venue_name && ev.city
       ? `https://www.google.com/maps/search/${encodeURIComponent(ev.venue_name + " " + ev.city)}`
       : null;

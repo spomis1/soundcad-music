@@ -1,4 +1,5 @@
 import os
+import unicodedata
 import httpx
 from datetime import datetime, timezone
 
@@ -6,33 +7,48 @@ BASE_URL = "https://app.ticketmaster.com/discovery/v2"
 
 # Venue capacity estimates by size category (Ticketmaster doesn't expose raw capacity)
 VENUE_SIZE_MAP = {
-    "arena": 15000,
-    "stadium": 50000,
-    "amphitheatre": 10000,
-    "amphitheater": 10000,
-    "theatre": 2000,
-    "theater": 2000,
-    "club": 500,
-    "bar": 300,
-    "festival": 30000,
-    "hall": 3000,
-    "center": 8000,
-    "centre": 8000,
+    # English
+    "arena": 15000, "stadium": 50000, "dome": 40000,
+    "amphitheatre": 10000, "amphitheater": 10000,
+    "theatre": 2000, "theater": 2000,
+    "auditorium": 3000, "hall": 3000,
+    "center": 8000, "centre": 8000,
+    "festival": 30000, "club": 500, "bar": 300,
+    # Spanish / Portuguese
+    "estadio": 50000, "palacio": 8000,
+    "auditorio": 3000, "teatro": 1500,
+    "velodromo": 30000,
+    # Catalan
+    "estadi": 50000, "palau": 8000,
+    # Italian
+    "ippodromo": 30000, "stadio": 50000,
+    # French
+    "stade": 50000, "velodrome": 30000, "zenith": 6000,
+    # German / Dutch / Polish / Nordic
+    "arena": 15000, "stadion": 50000, "narodowy": 50000,
+    "gelredome": 30000, "ziggo": 17000,
+    # Generic large
+    "olimpic": 50000, "olympic": 50000, "national": 40000,
 }
 
 
+def _ascii(s: str) -> str:
+    """Strip accents for keyword matching."""
+    return unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode()
+
+
 def _estimate_capacity(venue_name: str) -> int:
-    """Heuristic: guess venue size from its name."""
+    """Heuristic: guess venue size from its name (accent-normalized)."""
     if not venue_name:
         return 1000
-    lower = venue_name.lower()
+    lower = _ascii(venue_name).lower()
     for keyword, cap in VENUE_SIZE_MAP.items():
         if keyword in lower:
             return cap
     return 1000
 
 
-async def get_upcoming_events(artist_name: str, max_results: int = 20) -> list[dict]:
+async def get_upcoming_events(artist_name: str, max_results: int = 50) -> list[dict]:
     """Fetch upcoming events for an artist."""
     async with httpx.AsyncClient(timeout=10) as client:
         r = await client.get(
@@ -41,7 +57,7 @@ async def get_upcoming_events(artist_name: str, max_results: int = 20) -> list[d
                 "apikey": os.environ["TICKETMASTER_API_KEY"],
                 "keyword": artist_name,
                 "classificationName": "music",
-                "size": max_results,
+                "size": min(max_results, 200),
                 "sort": "date,asc",
             },
         )

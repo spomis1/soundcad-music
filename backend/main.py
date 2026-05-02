@@ -55,20 +55,16 @@ def _is_real_event(ev: dict, artist_name: str, popularity: int) -> bool:
     norm_title = _ascii(title)
     norm_artist = _ascii(artist_name)
 
-    # 1. Title starts with the artist name → probably real (tour/show/festival slot)
-    #    But also check the suffix for tribute keywords
+    # 1. Reject tribute/themed nights by title keywords
     if norm_title.startswith(norm_artist):
         suffix = norm_title[len(norm_artist):].strip(" -:")
-        # "Bad Bunny Dance Party" — suffix has tribute word → fake
         if any(kw in suffix for kw in _TRIBUTE_KW):
             return False
-        return True
-
-    # 2. Title doesn't start with artist → any tribute keyword = reject
-    if any(kw in norm_title for kw in _TRIBUTE_KW):
+    elif any(kw in norm_title for kw in _TRIBUTE_KW):
         return False
 
-    # 3. Capacity sanity check: popular artists don't play tiny venues
+    # 2. Capacity sanity check — always runs regardless of title match.
+    #    Popular artists simply don't play tiny venues.
     cap = ev.get("estimated_capacity", 1_000)
     for min_pop, min_cap in _POP_MIN_CAPACITY:
         if popularity >= min_pop and cap < min_cap:
