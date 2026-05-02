@@ -1,803 +1,499 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Soundcard Music — Roadmap de Implementación</title>
+  <title>SoundCard Music — Roadmap</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0a0a0f;
-      --bg2: #111118;
-      --bg3: #18181f;
-      --border: #2a2a38;
-      --accent: #7c3aed;
+      --bg:      #0a0a0f;
+      --bg2:     #111118;
+      --bg3:     #18181f;
+      --border:  #2a2a38;
+      --accent:  #7c3aed;
       --accent2: #a855f7;
-      --green: #22c55e;
-      --yellow: #eab308;
-      --red: #ef4444;
-      --blue: #3b82f6;
-      --text: #e2e8f0;
-      --muted: #64748b;
+      --green:   #22c55e;
+      --yellow:  #eab308;
+      --red:     #ef4444;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
     }
-
     body {
       background: var(--bg);
       color: var(--text);
       font-family: 'Inter', system-ui, sans-serif;
       min-height: 100vh;
-      padding-bottom: 80px;
+      padding: 0 0 80px;
     }
-
-    /* ── Header ── */
     header {
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      padding: 28px 40px;
       display: flex;
       align-items: center;
       gap: 16px;
-    }
-
-    .logo { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
-    .logo span { color: var(--accent2); }
-
-    .header-meta {
-      margin-left: auto;
-      text-align: right;
-    }
-
-    .header-meta p { color: var(--muted); font-size: 0.8rem; }
-    .header-meta a {
-      color: var(--accent2);
-      text-decoration: none;
-      font-size: 0.8rem;
-    }
-    .header-meta a:hover { text-decoration: underline; }
-
-    /* ── Intro ── */
-    .intro {
-      max-width: 860px;
-      margin: 48px auto 0;
-      padding: 0 24px;
-      text-align: center;
-    }
-
-    .intro h1 {
-      font-size: 2.2rem;
-      font-weight: 800;
-      letter-spacing: -1px;
-      margin-bottom: 12px;
-    }
-
-    .intro p { color: var(--muted); font-size: 1rem; line-height: 1.6; }
-
-    /* ── Progress bar ── */
-    .progress-wrap {
-      max-width: 860px;
-      margin: 36px auto 0;
-      padding: 0 24px;
-    }
-
-    .progress-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .progress-bar-wrap {
-      height: 8px;
-      background: var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .progress-bar {
-      height: 100%;
-      width: 14%; /* 1 de 7 fases = código subido */
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      border-radius: 4px;
-    }
-
-    /* ── Timeline ── */
-    .timeline {
-      max-width: 860px;
-      margin: 48px auto 0;
-      padding: 0 24px;
-      position: relative;
-    }
-
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 44px;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: var(--border);
-    }
-
-    /* ── Step ── */
-    .step {
-      display: flex;
-      gap: 24px;
-      margin-bottom: 32px;
-      position: relative;
-    }
-
-    .step-number {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 1rem;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 1;
-      border: 2px solid var(--border);
-      background: var(--bg);
-    }
-
-    .step.done .step-number { background: var(--green); border-color: var(--green); color: #000; }
-    .step.active .step-number { background: var(--accent); border-color: var(--accent2); color: #fff; box-shadow: 0 0 20px rgba(168,85,247,0.4); }
-    .step.pending .step-number { background: var(--bg3); color: var(--muted); }
-
-    .step-body {
-      flex: 1;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
       background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin-top: 0;
     }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 1.3rem; font-weight: 700; }
+    .logo-icon { color: var(--accent2); font-size: 1.5rem; }
+    .back-link { color: var(--accent2); text-decoration: none; font-size: 0.85rem; }
+    .back-link:hover { text-decoration: underline; }
+    .header-right { margin-left: auto; font-size: 0.8rem; color: var(--muted); }
 
-    .step.active .step-body {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(124,58,237,0.3);
-    }
+    .page { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+    h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 6px; }
+    .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 40px; }
 
-    .step.done .step-body { border-color: rgba(34,197,94,0.3); }
-
-    .step-header {
+    .progress-summary {
       display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 28px;
+      margin-bottom: 48px;
       flex-wrap: wrap;
     }
+    .ps-item { text-align: center; }
+    .ps-num  { font-size: 2.2rem; font-weight: 900; }
+    .ps-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
 
-    .step-title { font-size: 1.05rem; font-weight: 700; }
-
-    .badge {
-      font-size: 0.65rem;
+    .section { margin-bottom: 48px; }
+    .section-title {
+      font-size: 0.68rem;
       font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 50px;
+      letter-spacing: 2px;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .badge-done { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid var(--green); }
-    .badge-now { background: rgba(124,58,237,0.2); color: var(--accent2); border: 1px solid var(--accent); }
-    .badge-free { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
-    .badge-paid { background: rgba(234,179,8,0.1); color: var(--yellow); border: 1px solid rgba(234,179,8,0.3); }
-    .badge-time { background: rgba(59,130,246,0.1); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
-
-    .step-desc {
       color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.6;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
     }
 
-    /* ── Substeps ── */
-    .substeps { display: flex; flex-direction: column; gap: 8px; }
-
-    .substep {
+    .items { display: flex; flex-direction: column; gap: 10px; }
+    .item {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
-      padding: 10px 14px;
-      background: var(--bg3);
-      border-radius: 8px;
-      font-size: 0.85rem;
-    }
-
-    .substep-icon {
-      font-size: 1rem;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .substep-content { flex: 1; }
-
-    .substep-content strong { display: block; margin-bottom: 2px; color: var(--text); }
-    .substep-content span { color: var(--muted); font-size: 0.78rem; }
-
-    .substep-content a {
-      color: var(--accent2);
-      text-decoration: none;
-      font-size: 0.78rem;
-    }
-
-    .substep-content a:hover { text-decoration: underline; }
-
-    /* ── Code block ── */
-    .code-block {
-      background: #0d0d14;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 16px;
-      font-family: 'Cascadia Code', 'Fira Code', monospace;
-      font-size: 0.8rem;
-      color: #a5f3fc;
-      margin-top: 12px;
-      overflow-x: auto;
-      line-height: 1.7;
-    }
-
-    .code-block .comment { color: var(--muted); }
-    .code-block .key { color: var(--accent2); }
-
-    /* ── API table ── */
-    .api-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .api-card {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 14px;
-    }
-
-    .api-card-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
-    .api-card-desc { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; }
-    .api-card a {
-      font-size: 0.75rem;
-      color: var(--accent2);
-      text-decoration: none;
-    }
-    .api-card a:hover { text-decoration: underline; }
-
-    /* ── Tip box ── */
-    .tip {
-      background: rgba(124,58,237,0.08);
-      border: 1px solid rgba(124,58,237,0.3);
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 0.82rem;
-      color: #c4b5fd;
-      margin-top: 12px;
-      line-height: 1.5;
-    }
-
-    .tip strong { color: var(--accent2); }
-
-    /* ── Done banner ── */
-    .done-banner {
-      background: rgba(34,197,94,0.08);
-      border: 1px solid rgba(34,197,94,0.3);
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 0.82rem;
-      color: var(--green);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* ── Future section ── */
-    .future-section {
-      max-width: 860px;
-      margin: 48px auto 0;
-      padding: 0 24px;
-    }
-
-    .future-section h2 {
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 16px;
-    }
-
-    .future-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-
-    .future-card {
+      gap: 14px;
+      padding: 14px 18px;
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 16px;
     }
-
-    .future-card-phase {
-      font-size: 0.65rem;
+    .badge {
+      flex-shrink: 0;
+      font-size: 0.62rem;
       font-weight: 700;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--accent2);
-      margin-bottom: 6px;
+      padding: 3px 9px;
+      border-radius: 50px;
+      margin-top: 3px;
     }
+    .done    { background: rgba(34,197,94,0.12);  color: var(--green);  border: 1px solid rgba(34,197,94,0.3); }
+    .wip     { background: rgba(234,179,8,0.12);  color: var(--yellow); border: 1px solid rgba(234,179,8,0.3); }
+    .todo    { background: rgba(100,116,139,0.1); color: var(--muted);  border: 1px solid var(--border); }
+    .blocked { background: rgba(239,68,68,0.1);   color: var(--red);    border: 1px solid rgba(239,68,68,0.3); }
+    .idea    { background: rgba(167,85,247,0.1);  color: var(--accent2);border: 1px solid rgba(167,85,247,0.3); }
 
-    .future-card-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
-
-    .future-card ul {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+    .item-body { flex: 1; }
+    .item-title { font-weight: 600; font-size: 0.93rem; margin-bottom: 4px; }
+    .item-desc  { font-size: 0.81rem; color: var(--muted); line-height: 1.55; }
+    .note {
+      display: inline-block;
+      margin-top: 7px;
+      font-size: 0.73rem;
+      padding: 2px 8px;
+      border-radius: 4px;
     }
+    .note-yellow { color: var(--yellow); background: rgba(234,179,8,0.08);   border: 1px solid rgba(234,179,8,0.2); }
+    .note-red    { color: var(--red);    background: rgba(239,68,68,0.07);   border: 1px solid rgba(239,68,68,0.2); }
+    .note-green  { color: var(--green);  background: rgba(34,197,94,0.07);   border: 1px solid rgba(34,197,94,0.2); }
 
-    .future-card ul li {
+    .apis-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .api-card {
+      padding: 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .api-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .api-name   { font-weight: 700; font-size: 0.9rem; }
+    .api-what   { font-size: 0.79rem; color: var(--muted); line-height: 1.5; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-green  { background: var(--green); }
+    .dot-red    { background: var(--red); }
+
+    code {
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.25);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: monospace;
       font-size: 0.78rem;
-      color: var(--muted);
+      color: var(--accent2);
+    }
+
+    .deploy-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+    }
+    .deploy-intro { font-size: 0.83rem; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
+    .deploy-steps { display: flex; flex-direction: column; gap: 10px; }
+    .step {
       display: flex;
-      align-items: center;
-      gap: 6px;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 16px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
     }
-
-    .future-card ul li::before { content: '→'; color: var(--border); }
-
-    @media (max-width: 640px) {
-      .api-grid, .future-grid { grid-template-columns: 1fr; }
-      .timeline::before { left: 22px; }
-      header { padding: 20px; }
+    .step-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
     }
+    .step-title { font-weight: 600; font-size: 0.88rem; margin-bottom: 3px; }
+    .step-desc  { font-size: 0.79rem; color: var(--muted); line-height: 1.5; }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">◈ Sound<span>card</span></div>
-  <div class="header-meta">
-    <p>Repositorio privado</p>
-    <a href="https://github.com/spomis1/soundcad-music" target="_blank">github.com/spomis1/soundcad-music →</a>
+  <div class="logo">
+    <span class="logo-icon">◈</span>
+    <span>SoundCard Music</span>
   </div>
+  <a href="index.html" class="back-link">← Back to app</a>
+  <div class="header-right">Updated: May 2026</div>
 </header>
 
-<!-- Intro -->
-<div class="intro">
-  <h1>Roadmap de Implementación</h1>
-  <p>Paso a paso para pasar del código actual a un producto funcionando online con datos reales. Cada paso es independiente — podés hacerlos a tu ritmo.</p>
-</div>
+<div class="page">
+  <h1>Project Roadmap</h1>
+  <p class="subtitle">Music Industry Intelligence Dashboard — portfolio project</p>
 
-<!-- Progress -->
-<div class="progress-wrap">
-  <div class="progress-label">
-    <span>Progreso actual</span>
-    <span>Paso 1 de 8 completado</span>
+  <div class="progress-summary">
+    <div class="ps-item">
+      <div class="ps-num" style="color:var(--green)">18</div>
+      <div class="ps-label">Done</div>
+    </div>
+    <div class="ps-item">
+      <div class="ps-num" style="color:var(--yellow)">3</div>
+      <div class="ps-label">In progress</div>
+    </div>
+    <div class="ps-item">
+      <div class="ps-num" style="color:var(--muted)">6</div>
+      <div class="ps-label">Planned</div>
+    </div>
+    <div class="ps-item">
+      <div class="ps-num" style="color:var(--red)">2</div>
+      <div class="ps-label">Blocked</div>
+    </div>
   </div>
-  <div class="progress-bar-wrap">
-    <div class="progress-bar"></div>
-  </div>
-</div>
 
-<!-- Timeline -->
-<div class="timeline">
-
-  <!-- STEP 1 — DONE -->
-  <div class="step done">
-    <div class="step-number">✓</div>
-    <div class="step-body">
-      <div class="step-header">
-        <span class="step-title">Código base y repositorio</span>
-        <span class="badge badge-done">Completado</span>
-        <span class="badge badge-free">Gratis</span>
+  <!-- APIs -->
+  <div class="section">
+    <div class="section-title">APIs integradas — 7 activas, 1 deprecada</div>
+    <div class="apis-grid">
+      <div class="api-card">
+        <div class="api-header"><div class="dot dot-green"></div><div class="api-name">Spotify</div></div>
+        <div class="api-what">Followers, popularidad, géneros, top tracks, discografía (álbumes + singles separados), links directos a canciones y artista, artistas relacionados</div>
       </div>
-      <div class="done-banner">
-        ✅ El código está subido en <strong style="margin: 0 4px">github.com/spomis1/soundcad-music</strong> — 18 archivos, primer commit listo.
+      <div class="api-card">
+        <div class="api-header"><div class="dot dot-green"></div><div class="api-name">Last.fm</div></div>
+        <div class="api-what">Listeners globales, playcount all-time (stat "Total Plays"), tags de género, artistas similares como fallback</div>
+      </div>
+      <div class="api-card">
+        <div class="api-header"><div class="dot dot-green"></div><div class="api-name">MusicBrainz</div></div>
+        <div class="api-what">País de origen, tipo artista (solista/grupo), año de fundación. Sin API key — rate limit 1 req/s</div>
+      </div>
+      <div class="api-card">
+        <div class="api-header"><div class="dot dot-green"></div><div class="api-name">Deezer</div></div>
+        <div class="api-what">Previews 30 segundos por canción. Reemplaza Spotify (deprecó previews nov 2024). Sin API key</div>
+      </div>
+      <div class="api-card">
+        <div class="api-header"><div class="dot dot-green"></div><div class="api-name">Ticketmaster</div></div>
+        <div class="api-what">Shows próximos por <code>attractionId</code> (preciso, global). Precio + moneda real por país. Cubre US, México, España, UK, Europa y más</div>
+      </div>
+      <div class="api-card">
+        <div class="api-header"><div class="dot dot-green"></div><div class="api-name">Setlist.fm</div></div>
+        <div class="api-what">Historial completo de giras: fechas, ciudades, venues. Fuente del Momentum Score (tour activity)</div>
+      </div>
+      <div class="api-card">
+        <div class="api-header"><div class="dot dot-green"></div><div class="api-name">YouTube Data API</div></div>
+        <div class="api-what">Top videos del canal oficial (no canales de fans). Ordenados por views. Límite: ~45 artistas/día con quota gratuita</div>
+      </div>
+      <div class="api-card">
+        <div class="api-header"><div class="dot dot-red"></div><div class="api-name">Bandsintown ✗</div></div>
+        <div class="api-what">API deprecada 2024 — IAM deny (403). Es la fuente exacta que usa Spotify para conciertos. Sin alternativa gratuita disponible</div>
       </div>
     </div>
   </div>
 
-  <!-- STEP 2 — ACTIVE -->
-  <div class="step active">
-    <div class="step-number">2</div>
-    <div class="step-body">
-      <div class="step-header">
-        <span class="step-title">Obtener las 4 API Keys</span>
-        <span class="badge badge-now">Próximo paso</span>
-        <span class="badge badge-free">100% Gratis</span>
-        <span class="badge badge-time">~15 min</span>
-      </div>
-      <p class="step-desc">
-        Las 4 APIs son gratuitas y se crean en minutos. Sin esto, la app solo muestra datos de demo.
-      </p>
-      <div class="api-grid">
-        <div class="api-card">
-          <div class="api-card-name">1. Last.fm</div>
-          <div class="api-card-desc">Fans por país, estadísticas globales, artistas relacionados</div>
-          <a href="https://www.last.fm/api/account/create" target="_blank">Crear API key →</a>
-        </div>
-        <div class="api-card">
-          <div class="api-card-name">2. Setlist.fm</div>
-          <div class="api-card-desc">Historial completo de conciertos y giras</div>
-          <a href="https://api.setlist.fm/docs/1.0/index.html" target="_blank">Solicitar API key →</a>
-        </div>
-        <div class="api-card">
-          <div class="api-card-name">3. Ticketmaster</div>
-          <div class="api-card-desc">Próximos shows, venues, precios de entrada</div>
-          <a href="https://developer.ticketmaster.com/products-and-docs/apis/getting-started/" target="_blank">Crear API key →</a>
-        </div>
-        <div class="api-card">
-          <div class="api-card-name">4. YouTube Data API v3</div>
-          <div class="api-card-desc">Trending por país, videos, estadísticas</div>
-          <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console →</a>
+  <!-- Done -->
+  <div class="section">
+    <div class="section-title">Completado</div>
+    <div class="items">
+
+      <div class="item">
+        <span class="badge done">Done</span>
+        <div class="item-body">
+          <div class="item-title">Artist header completo</div>
+          <div class="item-desc">Foto, nombre, géneros. Origen con bandera (🇵🇷 Puerto Rico · Solo Artist · b. 1994). Botón "Open on Spotify" verde con SVG logo.</div>
         </div>
       </div>
-      <div class="tip">
-        <strong>YouTube (el más complejo):</strong> Entrá a console.cloud.google.com → Crear proyecto → Buscar "YouTube Data API v3" → Habilitar → Credenciales → Crear API Key. Tarda 3 minutos.
+
+      <div class="item">
+        <span class="badge done">Done</span>
+        <div class="item-body">
+          <div class="item-title">4 stats: Spotify Followers · Total Plays · Upcoming Shows · Albums</div>
+          <div class="item-desc">Total Plays = Last.fm playcount all-time (proxy de relevancia histórica). "Markets" fue eliminado: Spotify deprecó <code>available_markets</code> en nov 2024 y siempre devolvía 0.</div>
+        </div>
       </div>
+
+      <div class="item">
+        <span class="badge done">Done</span>
+        <div class="item-body">
+          <div class="item-title">Industry Presence score (Momentum Badge)</div>
+          <div class="item-desc">Score 0–100: Spotify followers (30pts) + popularity (30pts) + upcoming shows (20pts) + tour history (20pts). Labels: Rising / Stable / Declining.</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <span class="badge done">Done</span>
+        <div class="item-body">
+          <div class="item-title">Top Tracks con preview 30s y links a Spotify</div>
+          <div class="item-desc">5 canciones top de Spotify. Preview via Deezer. Link a Spotify por canción. Album cover. Play/stop toggle.</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <span class="badge done">Done</span>
+        <div class="item-body">
+          <div class="item-title">Discografía: Álbumes + Singles por separado</div>
+          <div class="item-desc">Grid de álbumes completos (album_type=album, >1 track). Lista de últimos 8 singles. Deduplicados por nombre. Ordenados por fecha descendente.</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <span class="badge done">Done</span>
+        <div class="item-body">
+          <div class="item-title">Upcoming Shows con búsqueda por attractionId</div>
+          <div class="item-desc">Más preciso que keyword — evita tribute acts y elimina falsos positivos. Solo fechas futuras. Moneda correcta por país (EUR/GBP/MXN/etc.). Google Maps + link a Ticketmaster.</div>
+          <span class="note note-yellow">Ticketmaster tiene mejor cobertura en US/UK. Artistas del sur de Europa o pequeños pueden tener huecos.</span>
+        </div>
+      </div>
+
+      <div class="item">
+        <span class="badge done">Done</span>
+        <div class="item-body">
+          <div class="item-title">Filtro de eventos: tribute nights + capacidad mínima</div>
+          <div class="item-desc">Elimina "Latin Night - Bad Bunny Night" y similares. Dos capas: keywords en título + capacidad mínima según popularidad del artista.</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <span class="badge done">Done</span>
+        <div class="item-body">
+          <div class="item-title">YouTube: solo canal oficial del artista</div>
+          <div class="item-desc">Busca el canal oficial por nombre antes de traer videos. Evita canales de fans y compilaciones. Fallback a keyword search si no encuentra canal.</div>
+          <span class="note note-yellow">~45 artistas/día con quota gratuita de YouTube (10k units/día)</span>
+        </div>
+      </div>
+
+      <div class="item">
+        <span class="badge done">Done</span>
+        <div class="item-body">
+          <div class="item-title">Similar Artists clickeables (Spotify + Last.fm fallback)</div>
+          <div class="item-desc">Click en un artista → búsqueda directa. Filtro de nombres raros con "/" o "&".</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <span class="badge done">Done</span>
+        <div class="item-body">
+          <div class="item-title">Cache 7 días en PostgreSQL</div>
+          <div class="item-desc">Primera búsqueda: ~5-8s (8 APIs en paralelo). Siguientes búsquedas: instantáneas. Upsert automático con timestamp.</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- STEP 3 -->
-  <div class="step pending">
-    <div class="step-number">3</div>
-    <div class="step-body">
-      <div class="step-header">
-        <span class="step-title">Crear el backend en Railway</span>
-        <span class="badge badge-paid">~$5/mes</span>
-        <span class="badge badge-time">~20 min</span>
-      </div>
-      <p class="step-desc">
-        Railway es donde va a correr el servidor Python (FastAPI) y la base de datos PostgreSQL que cachea las respuestas de las APIs.
-      </p>
-      <div class="substeps">
-        <div class="substep">
-          <span class="substep-icon">1️⃣</span>
-          <div class="substep-content">
-            <strong>Crear cuenta en Railway</strong>
-            <span>Entrá a <a href="https://railway.app" target="_blank">railway.app</a> → Sign in with GitHub → plan Hobby ($5/mes con crédito incluido)</span>
-          </div>
-        </div>
-        <div class="substep">
-          <span class="substep-icon">2️⃣</span>
-          <div class="substep-content">
-            <strong>Nuevo proyecto desde GitHub</strong>
-            <span>New Project → Deploy from GitHub repo → seleccionás <strong>soundcad-music</strong> → Root directory: <code style="background:#0d0d14;padding:1px 6px;border-radius:4px;color:#a5f3fc">backend/</code></span>
-          </div>
-        </div>
-        <div class="substep">
-          <span class="substep-icon">3️⃣</span>
-          <div class="substep-content">
-            <strong>Agregar base de datos PostgreSQL</strong>
-            <span>En el proyecto → + Add → Database → PostgreSQL. Railway conecta todo automáticamente.</span>
-          </div>
-        </div>
-        <div class="substep">
-          <span class="substep-icon">4️⃣</span>
-          <div class="substep-content">
-            <strong>Configurar variables de entorno</strong>
-            <span>Variables → agregar las 4 API keys del paso anterior + DATABASE_URL (Railway la genera sola)</span>
-          </div>
+  <!-- In progress -->
+  <div class="section">
+    <div class="section-title">En progreso / próximo paso</div>
+    <div class="items">
+
+      <div class="item">
+        <span class="badge wip">WIP</span>
+        <div class="item-body">
+          <div class="item-title">URL params: <code>?artist=bad+bunny</code></div>
+          <div class="item-desc">La URL cambia cuando buscas un artista. Permite compartir links directos. Hace la app parecer mucho más completa. ~30 min de trabajo.</div>
+          <span class="note note-green">Quick win — alto impacto visual, poco esfuerzo</span>
         </div>
       </div>
-      <div class="code-block">
-<span class="comment"># Variables que tenés que poner en Railway → Variables</span>
-<span class="key">LASTFM_API_KEY</span>       = tu_key_de_lastfm
-<span class="key">SETLISTFM_API_KEY</span>    = tu_key_de_setlistfm
-<span class="key">TICKETMASTER_API_KEY</span> = tu_key_de_ticketmaster
-<span class="key">YOUTUBE_API_KEY</span>      = tu_key_de_youtube
-<span class="comment"># DATABASE_URL → Railway la pone sola al agregar PostgreSQL</span>
+
+      <div class="item">
+        <span class="badge wip">WIP</span>
+        <div class="item-body">
+          <div class="item-title">Placeholder imagen cuando no hay foto</div>
+          <div class="item-desc">Si el artista no tiene imagen en Spotify, el avatar queda roto. Necesita un SVG genérico o las iniciales del artista como fallback.</div>
+        </div>
       </div>
+
+      <div class="item">
+        <span class="badge wip">WIP</span>
+        <div class="item-body">
+          <div class="item-title">Responsive CSS para mobile</div>
+          <div class="item-desc">Stats-row en pantallas &lt;400px se aprieta. Momentum badge puede desbordarse. Autocomplete con <code>top</code> fijo puede desalinearse en mobile.</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- STEP 4 -->
-  <div class="step pending">
-    <div class="step-number">4</div>
-    <div class="step-body">
-      <div class="step-header">
-        <span class="step-title">Conectar el frontend con el backend</span>
-        <span class="badge badge-free">Gratis</span>
-        <span class="badge badge-time">5 min</span>
-      </div>
-      <p class="step-desc">
-        Una sola línea a cambiar en <code style="background:#0d0d14;padding:1px 6px;border-radius:4px;color:#a5f3fc">frontend/app.js</code> para que el frontend apunte al backend de Railway.
-      </p>
-      <div class="code-block">
-<span class="comment">// Línea 4 en frontend/app.js — reemplazar con tu URL de Railway</span>
-<span class="comment">// Railway te la da en: tu-proyecto → Settings → Domains</span>
+  <!-- Blocked -->
+  <div class="section">
+    <div class="section-title">Bloqueado (sin solución gratuita)</div>
+    <div class="items">
 
-const API_BASE = window.location.hostname === "localhost"
-  ? "http://localhost:8000"
-  : <span class="key">"https://soundcad-music-production.up.railway.app"</span>; <span class="comment">← tu URL real</span>
+      <div class="item">
+        <span class="badge blocked">Blocked</span>
+        <div class="item-body">
+          <div class="item-title">Bandsintown — fuente de conciertos de Spotify</div>
+          <div class="item-desc">API deprecada 2024. IAM policy deny en todos los endpoints. Sería perfecta: es exactamente lo que usa Spotify para su pestaña "Concerts". Spotify tampoco expone conciertos en su API pública.</div>
+          <span class="note note-red">Songkick tampoco — requiere acuerdo comercial para nuevos devs desde 2018</span>
+        </div>
       </div>
-      <div class="tip">
-        Después de este cambio hacés <strong>git add . → git commit → git push</strong> y Railway redespliega automáticamente.
+
+      <div class="item">
+        <span class="badge blocked">Blocked</span>
+        <div class="item-body">
+          <div class="item-title">Monthly Listeners de Spotify</div>
+          <div class="item-desc">El dato más visible de Spotify (ej. "45M monthly listeners") no está disponible en la API pública. Ningún endpoint oficial ni no oficial lo expone.</div>
+          <span class="note note-red">available_markets también deprecado nov 2024 → Markets stat eliminado</span>
+        </div>
       </div>
+
     </div>
   </div>
 
-  <!-- STEP 5 -->
-  <div class="step pending">
-    <div class="step-number">5</div>
-    <div class="step-body">
-      <div class="step-header">
-        <span class="step-title">Publicar el frontend en GitHub Pages</span>
-        <span class="badge badge-free">100% Gratis</span>
-        <span class="badge badge-time">5 min</span>
-      </div>
-      <p class="step-desc">
-        GitHub Pages sirve el HTML/CSS/JS gratuitamente. Tu app queda en una URL pública que podés compartir en el portfolio.
-      </p>
-      <div class="substeps">
-        <div class="substep">
-          <span class="substep-icon">⚙️</span>
-          <div class="substep-content">
-            <strong>Activar GitHub Pages</strong>
-            <span>github.com/spomis1/soundcad-music → Settings → Pages → Source: <strong>Deploy from branch</strong> → Branch: master → Folder: /frontend → Save</span>
-          </div>
-        </div>
-        <div class="substep">
-          <span class="substep-icon">🌐</span>
-          <div class="substep-content">
-            <strong>Tu URL pública</strong>
-            <span>En ~2 minutos queda disponible en: <code style="background:#0d0d14;padding:1px 6px;border-radius:4px;color:#a5f3fc">https://spomis1.github.io/soundcad-music</code></span>
-          </div>
+  <!-- Planned -->
+  <div class="section">
+    <div class="section-title">Ideas para v2</div>
+    <div class="items">
+
+      <div class="item">
+        <span class="badge todo">Todo</span>
+        <div class="item-body">
+          <div class="item-title">Wikipedia Pageviews — indicador de interés público</div>
+          <div class="item-desc">API gratuita de Wikimedia: views mensuales de la Wikipedia del artista. Señal de "¿está en boca de todos ahora?" — diferente a seguidores o plays.</div>
         </div>
       </div>
+
+      <div class="item">
+        <span class="badge todo">Todo</span>
+        <div class="item-body">
+          <div class="item-title">GitHub Actions — pre-cache top 100 artistas semanal</div>
+          <div class="item-desc">Job automático que refresca los artistas más buscados. El autocomplete siempre tendrá buenos resultados y el cold-start en producción será raro.</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <span class="badge todo">Todo</span>
+        <div class="item-body">
+          <div class="item-title">Endpoint <code>DELETE /api/cache/{artist}</code></div>
+          <div class="item-desc">Invalidar manualmente el cache de un artista sin ir a psql. Útil durante desarrollo y para forzar actualizaciones de datos.</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <span class="badge idea">Idea</span>
+        <div class="item-body">
+          <div class="item-title">Share button con URL del artista</div>
+          <div class="item-desc">Botón "Copy link" que genera <code>?artist=rosalia</code> para compartir. Depende de URL params.</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <span class="badge idea">Idea</span>
+        <div class="item-body">
+          <div class="item-title">Setlist.fm — verificar nombre del primer resultado</div>
+          <div class="item-desc">Actualmente toma el primer resultado sin validar. Un tribute act con nombre similar podría contaminar el historial de giras.</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <span class="badge idea">Idea</span>
+        <div class="item-body">
+          <div class="item-title">Watchlist de artistas (requiere auth)</div>
+          <div class="item-desc">Guardar artistas favoritos para monitorear. Login con Google. Convierte el portfolio project en un producto real.</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- STEP 6 -->
-  <div class="step pending">
-    <div class="step-number">6</div>
-    <div class="step-body">
-      <div class="step-header">
-        <span class="step-title">Configurar la automatización semanal</span>
-        <span class="badge badge-free">Gratis</span>
-        <span class="badge badge-time">10 min</span>
-      </div>
-      <p class="step-desc">
-        GitHub Actions corre un script Python cada domingo que pre-cachea los 100 artistas más escuchados del mundo. Así la búsqueda es instantánea para los artistas populares.
+  <!-- Deploy -->
+  <div class="section">
+    <div class="section-title">Deploy — cuando estés listo</div>
+    <div class="deploy-box">
+      <p class="deploy-intro">
+        Stack gratuito: <strong style="color:var(--text)">Render.com</strong> (backend, duerme sin uso) +
+        <strong style="color:var(--text)">GitHub Pages</strong> (frontend, siempre activo) +
+        <strong style="color:var(--text)">Supabase</strong> (PostgreSQL, 500MB gratis).
+        Total: <strong style="color:var(--green)">$0/mes</strong>.
+        Alternativa: Railway $5/mes (backend no duerme, más profesional).
       </p>
-      <div class="substeps">
-        <div class="substep">
-          <span class="substep-icon">🔐</span>
-          <div class="substep-content">
-            <strong>Agregar secrets al repo de GitHub</strong>
-            <span>github.com/spomis1/soundcad-music → Settings → Secrets and variables → Actions → las mismas 5 variables que en Railway</span>
+      <div class="deploy-steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Supabase — PostgreSQL gratis</div>
+            <div class="step-desc">Crear proyecto en <code>supabase.com</code> → Settings → Database → copiar connection string → guardar como <code>DATABASE_URL</code></div>
           </div>
         </div>
-        <div class="substep">
-          <span class="substep-icon">▶️</span>
-          <div class="substep-content">
-            <strong>Probar el workflow manualmente</strong>
-            <span>Actions → "Refresh Artist Cache" → Run workflow → verificar que corre sin errores</span>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Render.com — Backend FastAPI</div>
+            <div class="step-desc">New Web Service → conectar repo GitHub → Build: <code>pip install -r requirements.txt</code> → Start: <code>uvicorn main:app --host 0.0.0.0 --port $PORT</code> → cargar env vars → Deploy</div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP 7 -->
-  <div class="step pending">
-    <div class="step-number">7</div>
-    <div class="step-body">
-      <div class="step-header">
-        <span class="step-title">Prueba end-to-end y listo para el portfolio</span>
-        <span class="badge badge-free">Gratis</span>
-        <span class="badge badge-time">15 min</span>
-      </div>
-      <p class="step-desc">
-        Checklist final antes de mostrarlo.
-      </p>
-      <div class="substeps">
-        <div class="substep">
-          <span class="substep-icon">🔍</span>
-          <div class="substep-content">
-            <strong>Buscar un artista y verificar las 4 fuentes</strong>
-            <span>Que aparezcan: mapa de fans, giras, shows próximos, YouTube trending</span>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Actualizar <code>API_BASE</code> en <code>app.js</code></div>
+            <div class="step-desc">Cambiar la URL de Railway placeholder por la URL real de Render (ej: <code>https://soundcard-music.onrender.com</code>). Commit y push.</div>
           </div>
         </div>
-        <div class="substep">
-          <span class="substep-icon">📱</span>
-          <div class="substep-content">
-            <strong>Verificar en mobile</strong>
-            <span>Abrir la URL pública desde el celular — el diseño es responsive</span>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">GitHub Pages — Frontend</div>
+            <div class="step-desc">Repo → Settings → Pages → Branch: main → Folder: <code>/frontend</code> → URL resultante: <code>tu-usuario.github.io/artist-radar/frontend/</code></div>
           </div>
         </div>
-        <div class="substep">
-          <span class="substep-icon">💼</span>
-          <div class="substep-content">
-            <strong>Agregar al portfolio / LinkedIn</strong>
-            <span>URL del proyecto + screenshot del dashboard + descripción: "Music industry intelligence dashboard, 4 APIs, FastAPI + PostgreSQL + GitHub Pages"</span>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Variables de entorno en Render</div>
+            <div class="step-desc"><code>DATABASE_URL</code> · <code>SPOTIFY_CLIENT_ID</code> · <code>SPOTIFY_CLIENT_SECRET</code> · <code>LASTFM_API_KEY</code> · <code>TICKETMASTER_API_KEY</code> · <code>SETLISTFM_API_KEY</code> · <code>YOUTUBE_API_KEY</code></div>
           </div>
         </div>
-        <div class="substep">
-          <span class="substep-icon">🔁</span>
-          <div class="substep-content">
-            <strong>Hacer el repo público (opcional)</strong>
-            <span>Settings → Danger Zone → Change visibility → Public. Así aparece en tu perfil de GitHub como proyecto.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP 8 -->
-  <div class="step pending">
-    <div class="step-number">8</div>
-    <div class="step-body">
-      <div class="step-header">
-        <span class="step-title">V3 — Búsqueda por canción</span>
-        <span class="badge badge-free">Gratis</span>
-        <span class="badge badge-time">2-3 días</span>
-      </div>
-      <p class="step-desc">
-        Agregar un segundo modo de búsqueda: por canción. El problema es que hay canciones con el mismo nombre,
-        featurings, re-grabaciones y covers — cada una es un objeto distinto en la industria.
-        La solución es usar <strong>MusicBrainz</strong> como fuente de IDs únicos, completamente gratis.
-      </p>
-      <div class="substeps">
-
-        <div class="substep">
-          <span class="substep-icon">🆔</span>
-          <div class="substep-content">
-            <strong>ISRC + MBID: los IDs únicos de la industria</strong>
-            <span>
-              <strong>ISRC</strong> (International Standard Recording Code) es el estándar global — cada grabación tiene uno.
-              <strong>MBID</strong> (MusicBrainz Recording ID) es un UUID gratuito y abierto que identifica la misma cosa.
-              Un featuring ("Blinding Lights ft. X") tiene su propio ISRC y MBID distinto al original.
-            </span>
-          </div>
-        </div>
-
-        <div class="substep">
-          <span class="substep-icon">🏛️</span>
-          <div class="substep-content">
-            <strong>MusicBrainz API — sin API key, gratis total</strong>
-            <span>
-              <code style="background:#0d0d14;padding:1px 6px;border-radius:4px;color:#a5f3fc">GET https://musicbrainz.org/ws/2/recording?query=Halo artist:Beyoncé&fmt=json</code><br/>
-              Devuelve lista de grabaciones con MBID, ISRC, duración, año, artistas — perfecta para desambiguar.
-              Rate limit: 1 req/seg (respetar con <code>asyncio.sleep(1)</code>).
-            </span>
-          </div>
-        </div>
-
-        <div class="substep">
-          <span class="substep-icon">🔍</span>
-          <div class="substep-content">
-            <strong>Flujo de búsqueda con desambiguación</strong>
-            <span>
-              Usuario escribe "Halo" → backend llama MusicBrainz → devuelve lista de 5-10 resultados con
-              artista + año + duración → frontend muestra el listado para que el usuario elija →
-              se carga el MBID elegido como ID único para todo lo demás.
-            </span>
-          </div>
-        </div>
-
-        <div class="substep">
-          <span class="substep-icon">👥</span>
-          <div class="substep-content">
-            <strong>Créditos: escritores, productores, featurings</strong>
-            <span>
-              MusicBrainz tiene relaciones Work→Recording con roles: compositor, letrista, productor.
-              <code style="background:#0d0d14;padding:1px 6px;border-radius:4px;color:#a5f3fc">GET /recording/{mbid}?inc=artist-credits+work-rels</code> devuelve todos los créditos sin costo.
-            </span>
-          </div>
-        </div>
-
-        <div class="substep">
-          <span class="substep-icon">📝</span>
-          <div class="substep-content">
-            <strong>Genius API — letra + anotaciones</strong>
-            <span>
-              Free tier de Genius permite buscar por artista + título y obtener la URL de la letra.
-              API key gratis en <strong>genius.com/api-clients</strong>.
-              Complementa MusicBrainz: créditos técnicos + texto completo de la letra.
-            </span>
-          </div>
-        </div>
-
-        <div class="substep">
-          <span class="substep-icon">🎵</span>
-          <div class="substep-content">
-            <strong>Canciones relacionadas — Last.fm track.getSimilar</strong>
-            <span>
-              <code style="background:#0d0d14;padding:1px 6px;border-radius:4px;color:#a5f3fc">track.getSimilar&artist=X&track=Y&limit=10</code> devuelve tracks parecidos con score de similitud.
-              Gratis, usa la misma API key de Last.fm que ya tenés.
-            </span>
-          </div>
-        </div>
-
-        <div class="substep">
-          <span class="substep-icon">🗄️</span>
-          <div class="substep-content">
-            <strong>Nueva tabla: song_cache</strong>
-            <span>
-              Misma lógica de caché de 7 días, pero indexada por MBID (UUID único).
-              Schema: <code style="background:#0d0d14;padding:1px 6px;border-radius:4px;color:#a5f3fc">mbid, isrc, title, artist, year, credits_json, lyrics_url, similar_json, cached_at</code>.
-              ~20KB por canción = espacio prácticamente ilimitado en el plan Railway free.
-            </span>
-          </div>
-        </div>
-
-        <div class="substep" style="opacity:0.5;">
-          <span class="substep-icon">⚠️</span>
-          <div class="substep-content">
-            <strong>Samples — limitación conocida</strong>
-            <span>
-              WhoSampled API es de pago (~$50/mes). MusicBrainz tiene datos parciales de samples en sus
-              relaciones Work-Work. No es confiable al 100% pero es lo único gratuito disponible.
-              Se documenta como limitación en el README.
-            </span>
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
 
 </div>
-
-<!-- Future roadmap -->
-<div class="future-section">
-  <h2>Próximas funcionalidades (V4 en adelante)</h2>
-  <div class="future-grid">
-
-    <div class="future-card">
-      <div class="future-card-phase">V2 — Adiciones rápidas</div>
-      <div class="future-card-title">Más contexto del artista</div>
-      <ul>
-        <li>Último lanzamiento (álbum / single)</li>
-        <li>Shows cerca de tu ubicación</li>
-        <li>Links a redes sociales</li>
-        <li>Artistas relacionados</li>
-        <li>Canciones relacionadas</li>
-      </ul>
-    </div>
-
-    <div class="future-card">
-      <div class="future-card-phase">V3 — ✅ En roadmap (Paso 8)</div>
-      <div class="future-card-title">Búsqueda por canción</div>
-      <ul>
-        <li>ISRC + MBID como IDs únicos</li>
-        <li>MusicBrainz: créditos gratis</li>
-        <li>Desambiguación de tracks homónimos</li>
-        <li>Genius API: letra + anotaciones</li>
-        <li>Last.fm: canciones similares</li>
-      </ul>
-    </div>
-
-    <div class="future-card">
-      <div class="future-card-phase">V4 — Negocio</div>
-      <div class="future-card-title">Plataforma escalable</div>
-      <ul>
-        <li>Login + watchlists de artistas</li>
-        <li>Alertas por email (shows nuevos)</li>
-        <li>API pública para terceros</li>
-        <li>Plan freemium ($9/mes)</li>
-        <li>Dashboard para promotores</li>
-      </ul>
-    </div>
-
-  </div>
-</div>
-
-<!-- Footer -->
-<footer style="text-align:center; padding: 48px 24px 24px; color: var(--muted); font-size: 0.8rem;">
-  Soundcard Music · github.com/spomis1/soundcad-music · Generado con Claude Code
-</footer>
-
 </body>
 </html>
