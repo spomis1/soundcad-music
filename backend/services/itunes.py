@@ -29,13 +29,20 @@ async def get_itunes_data(artist_name: str) -> dict:
             if not results:
                 return {}
 
-            # Prefer exact name match (accent-normalized)
+            # Prefer exact name match (accent-normalized), then partial, then first
             target = _norm(artist_name)
             best = None
             for item in results:
                 if _norm(item.get("artistName", "")) == target:
                     best = item
                     break
+            if not best:
+                # Try partial match (artist name contained in iTunes name or vice versa)
+                for item in results:
+                    itunes_norm = _norm(item.get("artistName", ""))
+                    if target in itunes_norm or itunes_norm in target:
+                        best = item
+                        break
             if not best:
                 best = results[0]
 

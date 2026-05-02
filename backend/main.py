@@ -303,7 +303,11 @@ async def get_artist(artist_name: str):
     if row:
         age_days = (datetime.now(timezone.utc) - row["cached_at"]).days
         if age_days < CACHE_TTL_DAYS:
-            return json.loads(row["data"])
+            cached = json.loads(row["data"])
+            # If cached data is from old schema (missing new fields), force refresh
+            if "career_stats" in cached and "bio" in cached:
+                return cached
+            # else fall through to re-fetch with new schema
 
     try:
         data = await fetch_artist_data(artist_name.strip())
