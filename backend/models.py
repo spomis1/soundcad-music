@@ -90,14 +90,27 @@ class Album(BaseModel):
     album_type: Optional[str] = None
 
 
+class CareerStats(BaseModel):
+    total_shows: int = 0
+    toured_countries: int = 0
+    engagement_ratio: int = 0       # avg Last.fm plays per unique listener
+    engagement_label: str = "—"
+    years_active: Optional[int] = None
+
+
 class ArtistResponse(BaseModel):
     name: str
     listeners: int = 0
     playcount: int = 0
     bio_summary: str = ""
+    bio: str = ""                           # Wikipedia extract (2-3 sentences)
+    wiki_url: str = ""
+    wiki_pageviews_30d: int = 0
     tags: list[str] = []
     image_url: Optional[str] = None
     spotify_url: Optional[str] = None
+    itunes_url: str = ""
+    itunes_genre: str = ""
     # MusicBrainz metadata
     country_code: Optional[str] = None
     country_name: Optional[str] = None
@@ -118,13 +131,15 @@ class ArtistResponse(BaseModel):
     # Tour data
     recent_concerts: list[Concert] = []
     tour_timeline: list[TourEra] = []
-    # Upcoming
+    # Upcoming (kept for model compat, always empty now)
     upcoming_events: list[UpcomingEvent] = []
     # YouTube
     top_videos: list[YoutubeVideo] = []
     trending_regions: list[TrendingRegion] = []
     trending_region_count: int = 0
     total_views_top5: int = 0
+    # Career stats (derived)
+    career_stats: CareerStats = CareerStats()
     # Momentum
     momentum: MomentumScore
     # Meta

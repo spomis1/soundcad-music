@@ -367,26 +367,79 @@ function renderDashboard(d) {
   $("stat-listeners").textContent = fmt(d.spotify_followers || d.listeners || 0);
   const pcEl = $("stat-playcount");
   if (pcEl) pcEl.textContent = d.playcount ? fmt(d.playcount) : "—";
-  $("stat-shows").textContent = (d.upcoming_events || []).length;
+  const wvEl = $("stat-wiki-views");
+  if (wvEl) wvEl.textContent = d.wiki_pageviews_30d ? fmt(d.wiki_pageviews_30d) : "—";
   $("stat-albums").textContent = (d.albums || []).length || "—";
 
-  // Spotify artist link in header
+  // Streaming links
   const spBtn = $("artist-spotify-btn");
-  const spLink = $("artist-spotify-link");
-  if (d.spotify_url && spBtn && spLink) {
-    spBtn.href = d.spotify_url;
-    showEl("artist-spotify-link");
-  } else if (spLink) {
-    hideEl("artist-spotify-link");
+  if (spBtn) {
+    if (d.spotify_url) { spBtn.href = d.spotify_url; spBtn.classList.remove("hidden"); }
+    else { spBtn.classList.add("hidden"); }
+  }
+  const itunesBtn = $("artist-itunes-btn");
+  if (itunesBtn) {
+    if (d.itunes_url) { itunesBtn.href = d.itunes_url; itunesBtn.classList.remove("hidden"); }
+    else { itunesBtn.classList.add("hidden"); }
   }
 
+  renderBio(d);
+  renderCareerStats(d);
   renderMomentum(d.momentum);
   renderTopTracks(d.top_tracks || []);
   renderYoutube(d.top_videos || []);
   renderAlbums(d.albums || []);
   renderSingles(d.singles || []);
-  renderUpcoming(d.upcoming_events || []);
   renderRelatedArtists(d.related_artists || []);
+}
+
+// ── Bio ───────────────────────────────────────────────────────────────────────
+function renderBio(d) {
+  const bio = d.bio || "";
+  const wikiUrl = d.wiki_url || "";
+  if (!bio) { hideEl("bio-section"); return; }
+  $("bio-text").textContent = bio;
+  const wikiLink = $("bio-wiki-link");
+  if (wikiLink) {
+    if (wikiUrl) { wikiLink.href = wikiUrl; wikiLink.style.display = "inline"; }
+    else { wikiLink.style.display = "none"; }
+  }
+  showEl("bio-section");
+}
+
+// ── Career Stats ──────────────────────────────────────────────────────────────
+function renderCareerStats(d) {
+  const cs = d.career_stats || {};
+  let hasAny = false;
+
+  const set = (id, val) => {
+    const el = $(id);
+    if (el && val !== null && val !== undefined && val !== 0 && val !== "—") {
+      el.textContent = typeof val === "number" ? fmt(val) : val;
+      hasAny = true;
+    } else if (el) {
+      el.textContent = "—";
+    }
+  };
+
+  set("cs-engagement-val", cs.engagement_ratio);
+  set("cs-countries-val", cs.toured_countries);
+  set("cs-shows-val", cs.total_shows);
+  set("cs-years-val", cs.years_active ? `${cs.years_active}y` : null);
+  set("cs-yt-views-val", d.total_views_top5);
+
+  // Engagement label badge
+  const badge = $("cs-engagement-badge");
+  if (badge && cs.engagement_label && cs.engagement_label !== "—") {
+    badge.textContent = cs.engagement_label;
+    badge.className = "cs-badge";
+    if (cs.engagement_ratio >= 300) badge.classList.add("cs-badge-high");
+    else if (cs.engagement_ratio >= 100) badge.classList.add("cs-badge-mid");
+    else badge.classList.add("cs-badge-low");
+  }
+
+  if (hasAny) showEl("career-stats-section");
+  else hideEl("career-stats-section");
 }
 
 // ── Momentum ──────────────────────────────────────────────────────────────────
@@ -401,19 +454,18 @@ function renderMomentum(m) {
   $("momentum-bar").className = `momentum-bar ${cls}`;
   $("momentum-bar").style.width = `${m.score}%`;
 
-  // Factors breakdown
   const f = m.factors || {};
   const factorsEl = $("momentum-factors");
   if (factorsEl) {
     const desc = cls === "rising"
-      ? "High global relevance — strong fanbase, active on tour."
+      ? "High global relevance — strong fanbase, viral presence."
       : cls === "stable"
-      ? "Established artist — consistent presence, moderate activity."
-      : "Low current activity — small fanbase or off-tour.";
+      ? "Established artist — consistent fanbase, moderate activity."
+      : "Low current momentum — niche or off-peak artist.";
     factorsEl.innerHTML = `
-      <div class="mf-row"><span>Followers</span><span>${f.followers_score ?? f.listener_score ?? "—"}/30</span></div>
-      <div class="mf-row"><span>Popularity</span><span>${f.popularity_score ?? f.country_score ?? "—"}/30</span></div>
-      <div class="mf-row"><span>Upcoming shows</span><span>${f.upcoming_score ?? f.youtube_score ?? "—"}/20</span></div>
+      <div class="mf-row"><span>Followers</span><span>${f.followers_score ?? "—"}/30</span></div>
+      <div class="mf-row"><span>Popularity</span><span>${f.popularity_score ?? "—"}/30</span></div>
+      <div class="mf-row"><span>YouTube views</span><span>${f.youtube_score ?? "—"}/20</span></div>
       <div class="mf-row"><span>Tour history</span><span>${f.tour_score ?? "—"}/20</span></div>
       <p class="momentum-desc">${desc}</p>
     `;

@@ -29,14 +29,14 @@
     </div>
     <div id="autocomplete-list" class="autocomplete-list hidden"></div>
     <p id="search-hint" class="search-hint">
-      Live data from Spotify · Last.fm · Setlist.fm · Ticketmaster · YouTube
+      Live data from Spotify · Last.fm · YouTube · Wikipedia · Apple Music
     </p>
   </section>
 
   <!-- Loading state -->
   <div id="loading" class="loading hidden">
     <div class="spinner"></div>
-    <p>Fetching data from 5 sources...</p>
+    <p>Fetching data from 7 sources...</p>
   </div>
 
   <!-- Error state -->
@@ -62,18 +62,23 @@
             <span class="stat-label">Total Plays</span>
           </div>
           <div class="stat">
-            <span class="stat-val" id="stat-shows"></span>
-            <span class="stat-label">Upcoming Shows</span>
+            <span class="stat-val" id="stat-wiki-views"></span>
+            <span class="stat-label">Wikipedia Views/mo</span>
           </div>
           <div class="stat">
             <span class="stat-val" id="stat-albums"></span>
             <span class="stat-label">Albums</span>
           </div>
         </div>
-        <div id="artist-spotify-link" class="artist-spotify-link hidden">
-          <a id="artist-spotify-btn" href="#" target="_blank" rel="noopener">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-            Open on Spotify
+        <!-- Streaming links -->
+        <div class="artist-links" id="artist-links">
+          <a id="artist-spotify-btn" href="#" target="_blank" rel="noopener" class="artist-link-btn spotify-btn hidden">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            Spotify
+          </a>
+          <a id="artist-itunes-btn" href="#" target="_blank" rel="noopener" class="artist-link-btn itunes-btn hidden">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026C4.78.07 4.015.15 3.29.43a4.93 4.93 0 00-1.828 1.196 5.01 5.01 0 00-1.12 1.94C.097 4.406.03 5.282.014 6.158c0 .075-.01.15-.014.224v11.989c.01.151.018.303.027.454.064.848.166 1.688.557 2.46a4.977 4.977 0 002.613 2.512c.756.279 1.554.33 2.36.355.088.003.176.01.264.013H18.17c.05-.003.101-.007.15-.01.79-.025 1.577-.08 2.323-.333a5.022 5.022 0 002.96-2.923c.23-.762.287-1.548.31-2.33.004-.082.01-.164.013-.246V6.337c-.003-.071-.007-.143-.01-.213zm-8.16 9.025a3.793 3.793 0 01-.904 1.474c-.508.505-1.124.823-1.831.877a2.776 2.776 0 01-2.007-.613 2.766 2.766 0 01-.856-1.798 2.76 2.76 0 01.625-2.024 2.78 2.78 0 011.71-.938c.337-.052.677-.05 1.013-.05.206 0 .411.01.617.01V8.153a.416.416 0 01.416-.416h.001l3.293-.001a.416.416 0 01.416.417v.001l.001 1.724a.418.418 0 01-.418.418h-1.875V12.1c0 .77.002 1.535-.002 2.302-.001.248-.022.5-.2.647z"/></svg>
+            Apple Music
           </a>
         </div>
       </div>
@@ -86,6 +91,52 @@
           <div class="momentum-bar" id="momentum-bar"></div>
         </div>
         <div class="momentum-factors" id="momentum-factors"></div>
+      </div>
+    </section>
+
+    <!-- Bio strip -->
+    <section class="bio-strip hidden" id="bio-section">
+      <p id="bio-text" class="bio-text"></p>
+      <a id="bio-wiki-link" href="#" target="_blank" rel="noopener" class="bio-wiki-link">Wikipedia ↗</a>
+    </section>
+
+    <!-- Career Stats -->
+    <section class="career-stats hidden" id="career-stats-section">
+      <div class="cs-item" id="cs-engagement">
+        <span class="cs-icon">🎧</span>
+        <div class="cs-body">
+          <div class="cs-val" id="cs-engagement-val">—</div>
+          <div class="cs-label">plays / fan</div>
+        </div>
+        <div class="cs-badge" id="cs-engagement-badge"></div>
+      </div>
+      <div class="cs-item" id="cs-countries">
+        <span class="cs-icon">🌍</span>
+        <div class="cs-body">
+          <div class="cs-val" id="cs-countries-val">—</div>
+          <div class="cs-label">countries toured</div>
+        </div>
+      </div>
+      <div class="cs-item" id="cs-shows">
+        <span class="cs-icon">🎤</span>
+        <div class="cs-body">
+          <div class="cs-val" id="cs-shows-val">—</div>
+          <div class="cs-label">career shows</div>
+        </div>
+      </div>
+      <div class="cs-item" id="cs-years">
+        <span class="cs-icon">📅</span>
+        <div class="cs-body">
+          <div class="cs-val" id="cs-years-val">—</div>
+          <div class="cs-label">years active</div>
+        </div>
+      </div>
+      <div class="cs-item" id="cs-yt-views">
+        <span class="cs-icon">▶</span>
+        <div class="cs-body">
+          <div class="cs-val" id="cs-yt-views-val">—</div>
+          <div class="cs-label">YouTube top-5 views</div>
+        </div>
       </div>
     </section>
 
@@ -117,15 +168,9 @@
         <div id="singles-list" class="singles-list"></div>
       </div>
 
-      <!-- Upcoming Shows -->
-      <div class="card card-wide hidden" id="shows-section">
-        <h2 class="card-title">Upcoming Shows</h2>
-        <div id="upcoming-list" class="upcoming-list"></div>
-      </div>
-
       <!-- Related Artists -->
       <div class="card card-wide hidden" id="related-section">
-        <h2 class="card-title">Similar Artists on Spotify</h2>
+        <h2 class="card-title">Similar Artists</h2>
         <div id="related-artists" class="related-grid"></div>
       </div>
 
@@ -135,12 +180,12 @@
   <!-- Footer -->
   <footer>
     <p>
-      Data from Spotify · Last.fm · Setlist.fm · Ticketmaster · YouTube |
-      <a href="https://github.com/spomis1/soundcad-music" target="_blank">GitHub</a>
+      Data from Spotify · Last.fm · MusicBrainz · Deezer · YouTube · Wikipedia · Apple Music |
+      <a href="https://github.com/spomis1/soundcad-music" target="_blank">GitHub</a> ·
+      <a href="ROADMAP.html">Roadmap</a>
     </p>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
