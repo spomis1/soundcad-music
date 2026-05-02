@@ -112,30 +112,34 @@ async def get_artist_data(name: str) -> dict:
                 "listeners": None,
             })
 
-    # Deduplicate albums by name, sort by date desc, full albums first (max 12)
+    # Deduplicate by name, sort newest first, split into albums vs singles
     seen_names = set()
-    albums_full = []
-    albums_single = []
+    albums = []       # full albums (type=album, tracks > 1), newest first
+    singles = []      # singles + EPs + 1-track "albums", newest first
     for a in sorted(albums_raw, key=lambda x: x.get("release_date", ""), reverse=True):
         aname = a.get("name", "")
         if aname.lower() in seen_names:
             continue
         seen_names.add(aname.lower())
         img = a["images"][0]["url"] if a.get("images") else None
+        total = a.get("total_tracks") or 0
         entry = {
             "name": aname,
             "year": a.get("release_date", "")[:4],
-            "total_tracks": a.get("total_tracks"),
+            "release_date": a.get("release_date", ""),
+            "total_tracks": total,
             "image": img,
             "album_type": a.get("album_type"),
         }
-        if a.get("album_type") == "album":
-            albums_full.append(entry)
+        # Full album = type "album" with more than 1 track
+        if a.get("album_type") == "album" and total > 1:
+            albums.append(entry)
         else:
-            albums_single.append(entry)
+            singles.append(entry)
 
-    # Show full albums first, pad with recent singles up to 12 total
-    albums = (albums_full + albums_single)[:12]
+    # Albums: newest first, no hard cap (they're naturally few)
+    # Singles: keep only the 8 most recent
+    singles = singles[:8]
 
     image_url = None
     if artist.get("images"):
@@ -163,4 +167,5 @@ async def get_artist_data(name: str) -> dict:
             for t in top_tracks[:5]
         ],
         "albums": albums,
+        "singles": singles,
     }

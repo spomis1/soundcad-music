@@ -345,11 +345,12 @@ function renderDashboard(d) {
   $("stat-plays").textContent = d.spotify_popularity ? `${d.spotify_popularity}/100` : fmt(d.playcount || 0);
   $("stat-plays-label").textContent = d.spotify_popularity ? "SPOTIFY POPULARITY" : "ALL-TIME PLAYS";
   $("stat-shows").textContent = (d.upcoming_events || []).length;
-  $("stat-albums").textContent = (d.albums || []).length || "—";
+  $("stat-albums").textContent = (d.albums || []).length || "—";  // only full albums
 
   renderMomentum(d.momentum);
   renderYoutube(d.top_videos || []);
   renderAlbums(d.albums || []);
+  renderSingles(d.singles || []);
   renderUpcoming(d.upcoming_events || []);
   renderRelatedArtists(d.related_artists || []);
 }
@@ -424,6 +425,23 @@ const COUNTRY_SHORT = {
 };
 function shortCountry(name) {
   return COUNTRY_SHORT[name] || name || "";
+}
+
+// ── Singles ───────────────────────────────────────────────────────────────────
+function renderSingles(singles) {
+  if (!singles.length) { hideEl("singles-section"); return; }
+  $("singles-list").innerHTML = singles.map(s => `
+    <div class="single-row">
+      ${s.image
+        ? `<img class="single-cover" src="${s.image}" alt="${s.name}">`
+        : `<div class="single-cover-placeholder">♪</div>`}
+      <div class="single-info">
+        <div class="single-name">${s.name}</div>
+        <div class="single-year">${s.year || "—"}</div>
+      </div>
+    </div>
+  `).join("");
+  showEl("singles-section");
 }
 
 // ── Upcoming Shows ────────────────────────────────────────────────────────────

@@ -108,6 +108,7 @@ class ArtistResponse(BaseModel):
     related_artists: list[RelatedArtist] = []
     top_tracks: list[TopTrack] = []
     albums: list[Album] = []
+    singles: list[Album] = []
     # Geo presence
     country_presence: list[CountryPresence] = []
     # Tour data

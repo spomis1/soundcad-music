@@ -263,6 +263,7 @@ async def fetch_artist_data(artist_name: str) -> dict:
         "related_artists": related_artists,
         "top_tracks": spotify.get("top_tracks", []),
         "albums": spotify.get("albums", []),
+        "singles": spotify.get("singles", []),
         "country_presence": country_presence,
         "recent_concerts": setlists[:50],
         "tour_timeline": tour_timeline,
