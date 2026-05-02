@@ -557,15 +557,43 @@ function renderYoutube(videos) {
 }
 
 // ── Albums ────────────────────────────────────────────────────────────────────
+const DISCOGRAPHY_PAGE = 5;
+
+const SPOTIFY_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`;
+
+function albumCardHTML(a) {
+  // Whole card is the link — no nested <a> needed
+  const content = `
+    ${a.image ? `<img class="album-cover" src="${a.image}" alt="${a.name}" />` : '<div class="album-cover album-no-img">♪</div>'}
+    <div class="album-name">${a.name}</div>
+    <div class="album-meta">${a.year || ""}${a.total_tracks ? ` · ${a.total_tracks} tracks` : ""}</div>
+    ${a.spotify_url ? `<span class="album-spotify-label">${SPOTIFY_SVG} Spotify</span>` : ""}
+  `;
+  return a.spotify_url
+    ? `<a class="album-card" href="${a.spotify_url}" target="_blank" rel="noopener" title="Open on Spotify">${content}</a>`
+    : `<div class="album-card">${content}</div>`;
+}
+
 function renderAlbums(albums) {
   if (!albums.length) { hideEl("albums-section"); return; }
-  $("albums-list").innerHTML = albums.map(a => `
-    <div class="album-card">
-      ${a.image ? `<img class="album-cover" src="${a.image}" alt="${a.name}" />` : '<div class="album-cover album-no-img">♪</div>'}
-      <div class="album-name">${a.name}</div>
-      <div class="album-meta">${a.year || ""}${a.total_tracks ? ` · ${a.total_tracks} tracks` : ""}</div>
-    </div>
-  `).join("");
+  const list = $("albums-list");
+  const showMoreBtn = $("albums-show-more");
+  const total = albums.length;
+
+  list.innerHTML = albums.slice(0, DISCOGRAPHY_PAGE).map(albumCardHTML).join("");
+
+  if (showMoreBtn) {
+    if (total > DISCOGRAPHY_PAGE) {
+      showMoreBtn.textContent = `Show all ${total} albums ▾`;
+      showMoreBtn.style.display = "block";
+      showMoreBtn.onclick = () => {
+        list.innerHTML = albums.map(albumCardHTML).join("");
+        showMoreBtn.style.display = "none";
+      };
+    } else {
+      showMoreBtn.style.display = "none";
+    }
+  }
   showEl("albums-section");
 }
 
@@ -580,9 +608,9 @@ function shortCountry(name) {
 }
 
 // ── Singles ───────────────────────────────────────────────────────────────────
-function renderSingles(singles) {
-  if (!singles.length) { hideEl("singles-section"); return; }
-  $("singles-list").innerHTML = singles.map(s => `
+function singleRowHTML(s) {
+  // Always a div — Spotify link is a separate <a> inside, no nested anchors
+  return `
     <div class="single-row">
       ${s.image
         ? `<img class="single-cover" src="${s.image}" alt="${s.name}">`
@@ -591,8 +619,32 @@ function renderSingles(singles) {
         <div class="single-name">${s.name}</div>
         <div class="single-year">${s.year || "—"}</div>
       </div>
-    </div>
-  `).join("");
+      ${s.spotify_url
+        ? `<a class="single-spotify-link" href="${s.spotify_url}" target="_blank" rel="noopener" title="Open on Spotify">${SPOTIFY_SVG} Spotify</a>`
+        : ""}
+    </div>`;
+}
+
+function renderSingles(singles) {
+  if (!singles.length) { hideEl("singles-section"); return; }
+  const list = $("singles-list");
+  const showMoreBtn = $("singles-show-more");
+  const total = singles.length;
+
+  list.innerHTML = singles.slice(0, DISCOGRAPHY_PAGE).map(singleRowHTML).join("");
+
+  if (showMoreBtn) {
+    if (total > DISCOGRAPHY_PAGE) {
+      showMoreBtn.textContent = `Show all ${total} singles ▾`;
+      showMoreBtn.style.display = "block";
+      showMoreBtn.onclick = () => {
+        list.innerHTML = singles.map(singleRowHTML).join("");
+        showMoreBtn.style.display = "none";
+      };
+    } else {
+      showMoreBtn.style.display = "none";
+    }
+  }
   showEl("singles-section");
 }
 

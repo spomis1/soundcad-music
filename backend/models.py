@@ -85,9 +85,11 @@ class TopTrack(BaseModel):
 class Album(BaseModel):
     name: str
     year: Optional[str] = None
+    release_date: Optional[str] = None
     total_tracks: Optional[int] = None
     image: Optional[str] = None
     album_type: Optional[str] = None
+    spotify_url: Optional[str] = None
 
 
 class CareerStats(BaseModel):

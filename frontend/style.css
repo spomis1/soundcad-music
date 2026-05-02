@@ -671,6 +671,16 @@ header {
 
 .album-card {
   text-align: center;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  border-radius: 10px;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.album-card:hover {
+  transform: translateY(-2px);
+  background: var(--bg3);
 }
 
 .album-cover {
@@ -703,6 +713,18 @@ header {
   font-size: 0.7rem;
   color: var(--muted);
 }
+
+.album-spotify-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+  font-size: 0.68rem;
+  color: #1db954;
+  opacity: 0.75;
+}
+
+.album-card:hover .album-spotify-label { opacity: 1; }
 
 /* ─── Top Tracks ─────────────────────────────────────────────────────── */
 .tracks-list {
@@ -814,9 +836,29 @@ header {
   border-radius: 8px;
   background: var(--bg3);
   transition: background 0.15s;
+  text-decoration: none;
+  color: inherit;
 }
 
 .single-row:hover { background: var(--border); }
+
+.single-spotify-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: #1db954;
+  text-decoration: none;
+  opacity: 0.65;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+  padding: 3px 7px;
+  border: 1px solid rgba(29,185,84,0.3);
+  border-radius: 20px;
+}
+
+.single-spotify-link:hover { opacity: 1; background: rgba(29,185,84,0.1); }
 
 .single-cover {
   width: 44px;
@@ -853,6 +895,27 @@ header {
   font-size: 0.72rem;
   color: var(--muted);
   margin-top: 2px;
+}
+
+/* ─── Show-more button ──────────────────────────────────────────────── */
+.show-more-btn {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 9px 16px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.show-more-btn:hover {
+  background: var(--bg3);
+  color: var(--text);
+  border-color: var(--accent);
 }
 
 .no-shows {

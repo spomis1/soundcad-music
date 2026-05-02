@@ -130,16 +130,13 @@ async def get_artist_data(name: str) -> dict:
             "total_tracks": total,
             "image": img,
             "album_type": a.get("album_type"),
+            "spotify_url": a.get("external_urls", {}).get("spotify"),
         }
         # Full album = type "album" with more than 1 track
         if a.get("album_type") == "album" and total > 1:
             albums.append(entry)
         else:
             singles.append(entry)
-
-    # Albums: newest first, no hard cap (they're naturally few)
-    # Singles: keep only the 8 most recent
-    singles = singles[:8]
 
     image_url = None
     if artist.get("images"):
