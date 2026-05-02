@@ -68,6 +68,17 @@ class MomentumScore(BaseModel):
     factors: dict
 
 
+class RelatedArtist(BaseModel):
+    name: str
+    popularity: int = 0
+
+
+class TopTrack(BaseModel):
+    name: str
+    popularity: int = 0
+    preview_url: Optional[str] = None
+
+
 class ArtistResponse(BaseModel):
     name: str
     listeners: int = 0
@@ -75,6 +86,12 @@ class ArtistResponse(BaseModel):
     bio_summary: str = ""
     tags: list[str] = []
     image_url: Optional[str] = None
+    # Spotify
+    spotify_followers: int = 0
+    spotify_popularity: int = 0
+    spotify_market_count: int = 0
+    related_artists: list[RelatedArtist] = []
+    top_tracks: list[TopTrack] = []
     # Geo presence
     country_presence: list[CountryPresence] = []
     # Tour data

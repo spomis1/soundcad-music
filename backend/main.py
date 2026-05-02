@@ -11,10 +11,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import asyncpg
 
-from services.lastfm import get_artist_info, get_artist_top_countries
+from services.lastfm import get_artist_info
 from services.setlistfm import get_setlists, build_tour_timeline
 from services.ticketmaster import get_upcoming_events
 from services.youtube import get_artist_youtube_summary
+from services.spotify import get_artist_data as get_spotify_data
 from models import ArtistResponse, MomentumScore
 
 # ---------------------------------------------------------------------------
@@ -119,27 +120,42 @@ def compute_momentum(
 # ---------------------------------------------------------------------------
 
 async def fetch_artist_data(artist_name: str) -> dict:
-    info, setlists, upcoming, yt = await asyncio.gather(
+    info, setlists, upcoming, yt, spotify = await asyncio.gather(
         get_artist_info(artist_name),
         get_setlists(artist_name),
         get_upcoming_events(artist_name),
         get_artist_youtube_summary(artist_name),
+        get_spotify_data(artist_name),
     )
-    country_presence = await get_artist_top_countries(artist_name)
     tour_timeline = build_tour_timeline(setlists)
+
+    # Spotify is primary source; Last.fm fills gaps
+    name = spotify.get("name") or info.get("name", artist_name)
+    image_url = spotify.get("image_url") or info.get("image_url")
+    tags = spotify.get("genres") or info.get("tags", [])
+    country_presence = spotify.get("country_presence", [])
+    followers = spotify.get("followers", 0)
+    popularity = spotify.get("popularity", 0)
+    market_count = spotify.get("market_count", 0)
+
     momentum = compute_momentum(
         listeners=info.get("listeners", 0),
-        country_count=len(country_presence),
+        country_count=market_count,
         tour_timeline=tour_timeline,
         trending_region_count=yt.get("trending_region_count", 0),
     )
     return {
-        "name": info.get("name", artist_name),
+        "name": name,
         "listeners": info.get("listeners", 0),
         "playcount": info.get("playcount", 0),
         "bio_summary": info.get("bio_summary", ""),
-        "tags": info.get("tags", []),
-        "image_url": info.get("image_url"),
+        "tags": tags,
+        "image_url": image_url,
+        "spotify_followers": followers,
+        "spotify_popularity": popularity,
+        "spotify_market_count": market_count,
+        "related_artists": spotify.get("related_artists", []),
+        "top_tracks": spotify.get("top_tracks", []),
         "country_presence": country_presence,
         "recent_concerts": setlists[:50],
         "tour_timeline": tour_timeline,
@@ -156,6 +172,15 @@ async def fetch_artist_data(artist_name: str) -> dict:
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+@app.get("/debug/env")
+async def debug_env():
+    return {
+        "SPOTIFY_CLIENT_ID": bool(os.getenv("SPOTIFY_CLIENT_ID")),
+        "SPOTIFY_CLIENT_SECRET": bool(os.getenv("SPOTIFY_CLIENT_SECRET")),
+        "LASTFM_API_KEY": bool(os.getenv("LASTFM_API_KEY")),
+    }
+
 
 @app.get("/api/artist/{artist_name}", response_model=ArtistResponse)
 async def get_artist(artist_name: str):
