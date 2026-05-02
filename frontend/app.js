@@ -1,9 +1,9 @@
 // ── Config ──────────────────────────────────────────────────────────────────
-// Change this to your Railway backend URL when deployed.
+// Local dev → localhost. Production → your Render URL (update after deploy).
 const _h = window.location.hostname;
 const API_BASE = (_h === "localhost" || _h === "" || _h === "127.0.0.1")
   ? "http://localhost:8000"
-  : "https://YOUR-RAILWAY-APP.up.railway.app";  // replace after deploy
+  : "https://soundcard-music-api.onrender.com";  // ← update with your Render URL
 
 // ── Demo data (works offline, no backend needed) ─────────────────────────────
 const DEMO_DATA = {
@@ -335,7 +335,10 @@ async function doSearch(skipHistory = false) {
     }
     hideEl("loading");
     const box = $("error-box");
-    box.innerHTML = `No results for <b>"${name}"</b>. Check the spelling or try a more well-known artist.<br><small style="opacity:.6">Backend offline? Open in demo mode with: <em>The Weeknd</em>, <em>Bad Bunny</em>, <em>Taylor Swift</em> or <em>Rosalía</em>.</small>`;
+    const isLocalhost = _h === "localhost" || _h === "" || _h === "127.0.0.1";
+    box.innerHTML = isLocalhost
+      ? `No results for <b>"${name}"</b>. Check the spelling or try a more well-known artist.<br><small style="opacity:.6">Demo mode: try <em>The Weeknd</em>, <em>Bad Bunny</em>, <em>Taylor Swift</em> or <em>Rosalía</em>.</small>`
+      : `No results for <b>"${name}"</b>. The server may be waking up — <b>wait 30 seconds and try again.</b><br><small style="opacity:.6">Free hosting sleeps after inactivity. First request of the day takes ~30s.</small>`;
     showEl("error-box");
   }
 }
