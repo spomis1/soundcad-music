@@ -321,10 +321,23 @@ function renderDashboard(d) {
   $("artist-tags").innerHTML = (d.tags || []).slice(0, 5)
     .map((t) => `<span class="tag">${t}</span>`).join("");
 
-  $("stat-listeners").textContent = fmt(d.listeners || 0);
-  $("stat-plays").textContent     = fmt(d.playcount || 0);
+  // Stats — prefer Spotify followers over Last.fm listeners
+  const followers = d.spotify_followers || d.listeners || 0;
+  $("stat-listeners").textContent = fmt(followers);
+  $("stat-listeners").nextElementSibling.textContent =
+    d.spotify_followers ? "SPOTIFY FOLLOWERS" : "GLOBAL LISTENERS";
+  $("stat-plays").textContent     = d.spotify_popularity
+    ? `${d.spotify_popularity}/100`
+    : fmt(d.playcount || 0);
+  $("stat-plays").nextElementSibling.textContent =
+    d.spotify_popularity ? "POPULARITY" : "ALL-TIME PLAYS";
   $("stat-shows").textContent     = (d.recent_concerts || []).length;
   $("stat-trending").textContent  = d.trending_region_count || 0;
+
+  // Related artists
+  if (d.related_artists && d.related_artists.length) {
+    renderRelatedArtists(d.related_artists);
+  }
 
   renderMomentum(d.momentum);
   renderFanMap(d.country_presence || []);
@@ -514,4 +527,17 @@ function renderConcertMap(concerts) {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+// ── Related Artists ───────────────────────────────────────────────────────────
+function renderRelatedArtists(artists) {
+  const el = $("related-artists");
+  if (!el) return;
+  el.innerHTML = artists.map(a => `
+    <div class="related-card" onclick="document.getElementById('search-input').value='${a.name}';doSearch()">
+      <span class="related-name">${a.name}</span>
+      <span class="related-pop">${a.popularity}/100</span>
+    </div>
+  `).join("");
+  showEl("related-section");
+}
+
 loadAutocomplete();

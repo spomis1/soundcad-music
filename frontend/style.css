@@ -407,6 +407,39 @@ header {
   gap: 12px;
 }
 
+.related-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.related-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.related-card:hover {
+  border-color: var(--accent2);
+}
+
+.related-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.related-pop {
+  font-size: 0.75rem;
+  color: var(--accent2);
+  margin-left: auto;
+}
+
 .show-card {
   background: var(--bg3);
   border: 1px solid var(--border);
