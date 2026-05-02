@@ -13,7 +13,8 @@ import asyncpg
 
 from services.lastfm import get_artist_info, get_similar_artists
 from services.setlistfm import get_setlists, build_tour_timeline
-from services.ticketmaster import get_upcoming_events
+from services.ticketmaster import get_upcoming_events as get_upcoming_ticketmaster
+from services.bandsintown import get_upcoming_events as get_upcoming_bandsintown
 from services.youtube import get_artist_youtube_summary
 from services.spotify import get_artist_data as get_spotify_data
 from models import ArtistResponse, MomentumScore
@@ -119,14 +120,29 @@ def compute_momentum(
 # ---------------------------------------------------------------------------
 
 async def fetch_artist_data(artist_name: str) -> dict:
-    info, setlists, upcoming, yt, spotify, similar_lfm = await asyncio.gather(
+    info, setlists, tm_events, bit_events, yt, spotify, similar_lfm = await asyncio.gather(
         get_artist_info(artist_name),
         get_setlists(artist_name),
-        get_upcoming_events(artist_name),
+        get_upcoming_ticketmaster(artist_name),
+        get_upcoming_bandsintown(artist_name),
         get_artist_youtube_summary(artist_name),
         get_spotify_data(artist_name),
         get_similar_artists(artist_name),
     )
+
+    # Merge events: Ticketmaster (detailed pricing) + Bandsintown (global),
+    # deduplicate by date+city, keep max 20 sorted by date
+    def _event_key(e: dict) -> str:
+        return f"{e['date']}|{(e['city'] or '').lower()}"
+
+    seen_keys: set[str] = set()
+    upcoming = []
+    for ev in sorted(tm_events + bit_events, key=lambda e: e["date"]):
+        k = _event_key(ev)
+        if k not in seen_keys:
+            seen_keys.add(k)
+            upcoming.append(ev)
+    upcoming = upcoming[:20]
     tour_timeline = build_tour_timeline(setlists)
 
     # Spotify is primary source; Last.fm fills gaps

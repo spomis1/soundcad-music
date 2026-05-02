@@ -296,11 +296,19 @@ header {
 .momentum-bar.declining { background: var(--red); }
 
 .momentum-title {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-top: 4px;
+  margin-bottom: 2px;
+}
+
+.momentum-desc {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 6px;
+  line-height: 1.4;
 }
 
 .momentum-factors {

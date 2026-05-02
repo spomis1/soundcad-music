@@ -346,11 +346,17 @@ function renderMomentum(m) {
   const f = m.factors || {};
   const factorsEl = $("momentum-factors");
   if (factorsEl) {
+    const desc = cls === "rising"
+      ? "High global relevance — strong fanbase, active on tour."
+      : cls === "stable"
+      ? "Established artist — consistent presence, moderate activity."
+      : "Low current activity — small fanbase or off-tour.";
     factorsEl.innerHTML = `
-      <div class="mf-row"><span>Spotify followers</span><span>${f.followers_score ?? f.listener_score ?? "—"}/30</span></div>
-      <div class="mf-row"><span>Spotify popularity</span><span>${f.popularity_score ?? f.country_score ?? "—"}/30</span></div>
+      <div class="mf-row"><span>Followers</span><span>${f.followers_score ?? f.listener_score ?? "—"}/30</span></div>
+      <div class="mf-row"><span>Popularity</span><span>${f.popularity_score ?? f.country_score ?? "—"}/30</span></div>
       <div class="mf-row"><span>Upcoming shows</span><span>${f.upcoming_score ?? f.youtube_score ?? "—"}/20</span></div>
-      <div class="mf-row"><span>Tour activity</span><span>${f.tour_score ?? "—"}/20</span></div>
+      <div class="mf-row"><span>Tour history</span><span>${f.tour_score ?? "—"}/20</span></div>
+      <p class="momentum-desc">${desc}</p>
     `;
   }
 }

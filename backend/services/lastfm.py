@@ -88,10 +88,12 @@ async def get_similar_artists(artist_name: str) -> list[dict]:
         if "error" in data:
             return []
         artists = data.get("similarartists", {}).get("artist", [])
-        return [
+        clean = [
             {"name": a["name"], "popularity": int(float(a.get("match", 0)) * 100)}
-            for a in artists[:6]
+            for a in artists
+            if "/" not in a["name"] and "&" not in a["name"] and len(a["name"]) < 50
         ]
+        return clean[:6]
 
 
 async def get_top_artists_global(limit: int = 100) -> list[str]:
