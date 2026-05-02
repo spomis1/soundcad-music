@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import asyncpg
 
 from services.lastfm import get_artist_info, get_similar_artists
+from services.musicbrainz import get_artist_metadata
 from services.setlistfm import get_setlists, build_tour_timeline
 from services.ticketmaster import get_upcoming_events as get_upcoming_ticketmaster
 from services.bandsintown import get_upcoming_events as get_upcoming_bandsintown
@@ -130,18 +131,36 @@ async def fetch_artist_data(artist_name: str) -> dict:
         get_similar_artists(artist_name),
     )
 
-    # Merge events: Ticketmaster (detailed pricing) + Bandsintown (global),
-    # deduplicate by date+city, keep max 20 sorted by date
+    # MusicBrainz after Spotify so we can pass the canonical name (handles accents)
+    canonical = spotify.get("name") or artist_name
+    mb = await get_artist_metadata(artist_name, canonical_name=canonical)
+
+    # Merge events: Bandsintown first (global) + Ticketmaster (US pricing/links)
+    # When same date+city appears in both, BIT wins (more global), but we patch
+    # the ticket_url and pricing from TM if BIT doesn't have them.
     def _event_key(e: dict) -> str:
         return f"{e['date']}|{(e['city'] or '').lower()}"
 
+    # Index TM events for enrichment lookup
+    tm_by_key: dict[str, dict] = {}
+    for ev in tm_events:
+        tm_by_key[_event_key(ev)] = ev
+
     seen_keys: set[str] = set()
     upcoming = []
-    for ev in sorted(tm_events + bit_events, key=lambda e: e["date"]):
+    for ev in sorted(bit_events + tm_events, key=lambda e: e["date"]):
         k = _event_key(ev)
-        if k not in seen_keys:
-            seen_keys.add(k)
-            upcoming.append(ev)
+        if k in seen_keys:
+            continue
+        seen_keys.add(k)
+        # Enrich BIT event with TM pricing/ticket_url if available
+        if k in tm_by_key and not ev.get("ticket_url"):
+            tm_ev = tm_by_key[k]
+            ev["ticket_url"] = tm_ev.get("ticket_url") or ev.get("ticket_url")
+            ev["min_price"] = tm_ev.get("min_price") or ev.get("min_price")
+            ev["max_price"] = tm_ev.get("max_price") or ev.get("max_price")
+            ev["currency"] = tm_ev.get("currency") or ev.get("currency", "USD")
+        upcoming.append(ev)
     upcoming = upcoming[:20]
     tour_timeline = build_tour_timeline(setlists)
 
@@ -170,6 +189,14 @@ async def fetch_artist_data(artist_name: str) -> dict:
         "bio_summary": info.get("bio_summary", ""),
         "tags": tags,
         "image_url": image_url,
+        # MusicBrainz
+        "country_code": mb.get("country_code"),
+        "country_name": mb.get("country_name"),
+        "country_flag": mb.get("country_flag"),
+        "artist_type": mb.get("artist_type"),
+        "begin_year": mb.get("begin_year"),
+        "origin_area": mb.get("origin_area"),
+        # Spotify
         "spotify_followers": followers,
         "spotify_popularity": popularity,
         "spotify_market_count": market_count,

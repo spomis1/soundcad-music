@@ -312,6 +312,30 @@ function renderDashboard(d) {
   else { img.style.display = "none"; }
 
   $("artist-name").textContent = d.name;
+
+  // Origin line: 🇵🇷 Puerto Rico · Solo Artist · Since 2013
+  const originEl = $("artist-origin");
+  if (originEl) {
+    const parts = [];
+    if (d.country_flag && d.country_name) {
+      parts.push(`<span class="origin-flag">${d.country_flag}</span><span>${d.country_name}</span>`);
+    } else if (d.country_name) {
+      parts.push(`<span>${d.country_name}</span>`);
+    }
+    if (d.artist_type) {
+      const typeLabel = d.artist_type === "Person" ? "Solo Artist" : d.artist_type;
+      parts.push(`<span class="origin-dot">·</span><span>${typeLabel}</span>`);
+    }
+    if (d.begin_year) {
+      // For solo artists begin_year = birth year; for bands = founding year
+      const yearLabel = d.artist_type === "Person"
+        ? `b. ${d.begin_year}`
+        : `est. ${d.begin_year}`;
+      parts.push(`<span class="origin-dot">·</span><span>${yearLabel}</span>`);
+    }
+    originEl.innerHTML = parts.join("");
+  }
+
   $("artist-tags").innerHTML = (d.tags || []).slice(0, 5)
     .map((t) => `<span class="tag">${t}</span>`).join("");
 
@@ -392,6 +416,16 @@ function renderAlbums(albums) {
   showEl("albums-section");
 }
 
+// ── Country name normalizer ───────────────────────────────────────────────────
+const COUNTRY_SHORT = {
+  "United States Of America": "USA", "United States": "USA",
+  "United Kingdom": "UK", "The Netherlands": "Netherlands",
+  "South Korea": "South Korea", "Czech Republic": "Czech Republic",
+};
+function shortCountry(name) {
+  return COUNTRY_SHORT[name] || name || "";
+}
+
 // ── Upcoming Shows ────────────────────────────────────────────────────────────
 function renderUpcoming(events) {
   const el = $("upcoming-list");
@@ -411,7 +445,7 @@ function renderUpcoming(events) {
       <div class="show-card">
         <div class="show-date">${dateStr}</div>
         <div class="show-venue">${ev.venue_name || "—"}</div>
-        <div class="show-location">${[ev.city, ev.country].filter(Boolean).join(", ")}</div>
+        <div class="show-location">${[ev.city, shortCountry(ev.country)].filter(Boolean).join(", ")}</div>
         ${price ? `<div class="show-price">${price}</div>` : ""}
         <div class="show-actions">
           ${mapsUrl ? `<a class="show-maps-btn" href="${mapsUrl}" target="_blank" rel="noopener">📍 Maps</a>` : ""}

@@ -94,6 +94,13 @@ class ArtistResponse(BaseModel):
     bio_summary: str = ""
     tags: list[str] = []
     image_url: Optional[str] = None
+    # MusicBrainz metadata
+    country_code: Optional[str] = None
+    country_name: Optional[str] = None
+    country_flag: Optional[str] = None
+    artist_type: Optional[str] = None   # "Person" | "Group"
+    begin_year: Optional[str] = None
+    origin_area: Optional[str] = None
     # Spotify
     spotify_followers: int = 0
     spotify_popularity: int = 0

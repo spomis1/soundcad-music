@@ -204,11 +204,23 @@ header {
   line-height: 1.1;
 }
 
+.artist-origin {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 6px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.origin-flag { font-size: 1.1rem; }
+.origin-dot  { opacity: 0.4; }
+
 .tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 8px 0 16px;
+  margin: 4px 0 16px;
 }
 
 .tag {
