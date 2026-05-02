@@ -299,7 +299,7 @@ async function doSearch() {
     }
     hideEl("loading");
     const box = $("error-box");
-    box.innerHTML = `No results for <b>"${name}"</b>. Try: <em>The Weeknd</em>, <em>Bad Bunny</em>, <em>Taylor Swift</em> or <em>Rosalía</em>.<br><small style="opacity:.6">Live search requires the backend running on localhost:8000.</small>`;
+    box.innerHTML = `No results for <b>"${name}"</b>. Check the spelling or try a more well-known artist.<br><small style="opacity:.6">Backend offline? Open in demo mode with: <em>The Weeknd</em>, <em>Bad Bunny</em>, <em>Taylor Swift</em> or <em>Rosalía</em>.</small>`;
     showEl("error-box");
   }
 }
@@ -341,8 +341,8 @@ function renderDashboard(d) {
 
   // Stats
   $("stat-listeners").textContent = fmt(d.spotify_followers || d.listeners || 0);
-  const lfmEl = $("stat-listeners-lfm");
-  if (lfmEl) lfmEl.textContent = d.listeners ? fmt(d.listeners) : "—";
+  const pcEl = $("stat-playcount");
+  if (pcEl) pcEl.textContent = d.playcount ? fmt(d.playcount) : "—";
   $("stat-shows").textContent = (d.upcoming_events || []).length;
   $("stat-albums").textContent = (d.albums || []).length || "—";
 
@@ -525,8 +525,10 @@ function renderUpcoming(events) {
   const el = $("upcoming-list");
   if (!events.length) {
     el.innerHTML = '<p class="no-shows">No upcoming shows found.</p>';
+    showEl("shows-section");
     return;
   }
+  showEl("shows-section");
   el.innerHTML = events.slice(0, 15).map((ev) => {
     // Parse "YYYY-MM-DD" as local date (not UTC) to avoid off-by-one in non-UTC timezones
     const dateStr = ev.date ? (() => {

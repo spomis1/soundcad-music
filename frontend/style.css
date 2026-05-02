@@ -388,37 +388,7 @@ header {
   margin-bottom: 16px;
 }
 
-/* ─── Maps ──────────────────────────────────────────────────────── */
-#fan-map, #concert-map {
-  height: 340px;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-/* override leaflet tile brightness for dark mode */
-.leaflet-tile { filter: brightness(0.5) saturate(0.4) hue-rotate(200deg); }
-
-/* ─── Tour chart ─────────────────────────────────────────────────── */
-#tour-chart { max-height: 280px; }
-
 /* ─── YouTube ────────────────────────────────────────────────────── */
-#yt-regions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.region-chip {
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid var(--green);
-  border-radius: 50px;
-  color: var(--green);
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 4px 12px;
-}
-
 .yt-videos {
   display: flex;
   flex-direction: column;
