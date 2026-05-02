@@ -214,6 +214,26 @@ header {
 }
 
 .origin-flag { font-size: 1.1rem; }
+
+.artist-spotify-link { margin-top: 10px; }
+
+.artist-spotify-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #1DB954;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 5px 12px;
+  border: 1px solid #1DB954;
+  border-radius: 50px;
+  transition: background 0.2s;
+}
+
+.artist-spotify-link a:hover {
+  background: rgba(29, 185, 84, 0.1);
+}
 .origin-dot  { opacity: 0.4; }
 
 .tags {
@@ -674,6 +694,17 @@ header {
 
 .track-play-btn:hover { border-color: var(--accent2); background: rgba(168,85,247,0.1); }
 .track-play-btn.playing { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.track-spotify-btn {
+  color: #1DB954;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+}
+
+.track-spotify-btn:hover { opacity: 1; }
 
 .track-deezer {
   font-size: 0.7rem;

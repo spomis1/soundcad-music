@@ -246,6 +246,7 @@ async def fetch_artist_data(artist_name: str) -> dict:
             "name": t["name"],
             "popularity": t.get("popularity", 0),
             "preview_url": t.get("preview_url") or dz.get("preview_url"),
+            "spotify_url": t.get("spotify_url"),
             "deezer_url": dz.get("deezer_url"),
             "album_cover": dz.get("album_cover"),
         })
@@ -266,6 +267,7 @@ async def fetch_artist_data(artist_name: str) -> dict:
         "bio_summary": info.get("bio_summary", ""),
         "tags": tags,
         "image_url": image_url,
+        "spotify_url": spotify.get("spotify_url"),
         # MusicBrainz
         "country_code": mb.get("country_code"),
         "country_name": mb.get("country_name"),

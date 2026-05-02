@@ -145,8 +145,11 @@ async def get_artist_data(name: str) -> dict:
     if artist.get("images"):
         image_url = artist["images"][0]["url"]
 
+    artist_spotify_url = artist.get("external_urls", {}).get("spotify")
+
     return {
         "spotify_id": spotify_id,
+        "spotify_url": artist_spotify_url,
         "name": artist["name"],
         "followers": artist.get("followers", {}).get("total", 0),
         "popularity": artist.get("popularity", 0),
@@ -163,6 +166,7 @@ async def get_artist_data(name: str) -> dict:
                 "name": t["name"],
                 "popularity": t.get("popularity", 0),
                 "preview_url": t.get("preview_url"),
+                "spotify_url": t.get("external_urls", {}).get("spotify"),
             }
             for t in top_tracks[:5]
         ],

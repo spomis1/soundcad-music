@@ -77,6 +77,7 @@ class TopTrack(BaseModel):
     name: str
     popularity: int = 0
     preview_url: Optional[str] = None
+    spotify_url: Optional[str] = None
     deezer_url: Optional[str] = None
     album_cover: Optional[str] = None
 
@@ -96,6 +97,7 @@ class ArtistResponse(BaseModel):
     bio_summary: str = ""
     tags: list[str] = []
     image_url: Optional[str] = None
+    spotify_url: Optional[str] = None
     # MusicBrainz metadata
     country_code: Optional[str] = None
     country_name: Optional[str] = None
