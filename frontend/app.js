@@ -226,6 +226,33 @@ const $ = (id) => document.getElementById(id);
 function showEl(id)  { const el = $(id); if (el) el.classList.remove("hidden"); }
 function hideEl(id)  { const el = $(id); if (el) el.classList.add("hidden"); }
 
+// ── Light / Dark mode ────────────────────────────────────────────────────────
+(function initTheme() {
+  const saved = localStorage.getItem("theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const isLight = saved === "light" || (!saved && !prefersDark);
+  if (isLight) document.body.classList.add("light");
+  updateThemeIcon();
+})();
+
+function updateThemeIcon() {
+  const btn = $("theme-toggle");
+  if (btn) btn.textContent = document.body.classList.contains("light") ? "🌙" : "☀️";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = $("theme-toggle");
+  if (btn) {
+    updateThemeIcon();
+    btn.addEventListener("click", () => {
+      document.body.classList.toggle("light");
+      const isLight = document.body.classList.contains("light");
+      localStorage.setItem("theme", isLight ? "light" : "dark");
+      updateThemeIcon();
+    });
+  }
+});
+
 // ── Autocomplete ─────────────────────────────────────────────────────────────
 let cachedArtists = [];
 
@@ -398,11 +425,11 @@ function renderBio(d) {
   const bio = d.bio || "";
   const wikiUrl = d.wiki_url || "";
   if (!bio) { hideEl("bio-section"); return; }
-  $("bio-text").textContent = bio;
-  const wikiLink = $("bio-wiki-link");
-  if (wikiLink) {
-    if (wikiUrl) { wikiLink.href = wikiUrl; wikiLink.style.display = "inline"; }
-    else { wikiLink.style.display = "none"; }
+  const bioEl = $("bio-text");
+  if (wikiUrl) {
+    bioEl.innerHTML = `${bio} <a href="${wikiUrl}" target="_blank" rel="noopener" class="bio-wiki-link">Wikipedia ↗</a>`;
+  } else {
+    bioEl.textContent = bio;
   }
   showEl("bio-section");
 }
