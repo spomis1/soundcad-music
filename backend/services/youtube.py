@@ -1,8 +1,25 @@
 import os
+import re
+import unicodedata
 import httpx
 from datetime import datetime, timedelta, timezone
 
 BASE_URL = "https://www.googleapis.com/youtube/v3"
+
+
+def _normalize(s: str) -> str:
+    return unicodedata.normalize("NFD", (s or "").lower()).encode("ascii", "ignore").decode()
+
+
+def _channel_matches_artist(channel_title: str, artist_name: str) -> bool:
+    """
+    Check if a YouTube channel belongs to the artist.
+    Handles: "BadBunnyVEVO", "Bad Bunny Oficial", "Bad Bunny", "badbunnypr"
+    """
+    suffixes = r"(vevo|oficial|official|music|records|entertainment|tv|hd|channel|topic)$"
+    clean_ch = re.sub(suffixes, "", _normalize(channel_title).replace(" ", ""))
+    clean_ar = _normalize(artist_name).replace(" ", "")
+    return clean_ar in clean_ch or clean_ch in clean_ar
 
 # ISO 3166-1 alpha-2 codes for the regions we check
 REGIONS = [
@@ -11,24 +28,78 @@ REGIONS = [
 ]
 
 
+async def _find_artist_channel(artist_name: str, client: httpx.AsyncClient) -> str | None:
+    """Find the official YouTube channel ID for an artist. Returns None if not found."""
+    r = await client.get(
+        f"{BASE_URL}/search",
+        params={
+            "key": os.environ["YOUTUBE_API_KEY"],
+            "q": artist_name,
+            "type": "channel",
+            "maxResults": 5,
+            "part": "snippet",
+        },
+    )
+    if r.status_code != 200:
+        return None
+    for item in r.json().get("items", []):
+        ch_title = item["snippet"]["title"]
+        if _channel_matches_artist(ch_title, artist_name):
+            return item["id"]["channelId"]
+    return None
+
+
 async def search_artist_videos(artist_name: str, max_results: int = 10) -> list[dict]:
-    """Search for the artist's most recent music videos on YouTube."""
-    async with httpx.AsyncClient(timeout=10) as client:
-        r = await client.get(
-            f"{BASE_URL}/search",
-            params={
-                "key": os.environ["YOUTUBE_API_KEY"],
-                "q": f"{artist_name} official music video",
-                "type": "video",
-                "videoCategoryId": "10",  # Music category
-                "order": "relevance",
-                "maxResults": max_results,
-                "part": "snippet",
-            },
-        )
+    """
+    Search for the artist's top videos on YouTube.
+    Strategy:
+      1. Find the artist's official channel and get their most viewed videos.
+      2. If no channel found, fall back to keyword search filtered by channel name.
+    """
+    async with httpx.AsyncClient(timeout=15) as client:
+        channel_id = await _find_artist_channel(artist_name, client)
+
+        if channel_id:
+            # Get most viewed videos from the official channel
+            r = await client.get(
+                f"{BASE_URL}/search",
+                params={
+                    "key": os.environ["YOUTUBE_API_KEY"],
+                    "channelId": channel_id,
+                    "type": "video",
+                    "videoCategoryId": "10",
+                    "order": "viewCount",
+                    "maxResults": max_results,
+                    "part": "snippet",
+                },
+            )
+        else:
+            # Fallback: keyword search, filter by channel name
+            r = await client.get(
+                f"{BASE_URL}/search",
+                params={
+                    "key": os.environ["YOUTUBE_API_KEY"],
+                    "q": f"{artist_name} official music video",
+                    "type": "video",
+                    "videoCategoryId": "10",
+                    "order": "relevance",
+                    "maxResults": max_results * 2,  # fetch more to have room to filter
+                    "part": "snippet",
+                },
+            )
+
         if r.status_code != 200:
             return []
+
         items = r.json().get("items", [])
+
+        # If fallback search, filter to videos from the artist's channel
+        if not channel_id:
+            items = [
+                i for i in items
+                if _channel_matches_artist(i["snippet"]["channelTitle"], artist_name)
+            ]
+
         return [
             {
                 "video_id": i["id"]["videoId"],
@@ -37,7 +108,7 @@ async def search_artist_videos(artist_name: str, max_results: int = 10) -> list[
                 "thumbnail": i["snippet"]["thumbnails"].get("medium", {}).get("url"),
                 "channel": i["snippet"]["channelTitle"],
             }
-            for i in items
+            for i in items[:max_results]
         ]
 
 

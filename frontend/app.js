@@ -348,6 +348,7 @@ function renderDashboard(d) {
   $("stat-albums").textContent = (d.albums || []).length || "—";  // only full albums
 
   renderMomentum(d.momentum);
+  renderTopTracks(d.top_tracks || []);
   renderYoutube(d.top_videos || []);
   renderAlbums(d.albums || []);
   renderSingles(d.singles || []);
@@ -383,6 +384,67 @@ function renderMomentum(m) {
       <div class="mf-row"><span>Tour history</span><span>${f.tour_score ?? "—"}/20</span></div>
       <p class="momentum-desc">${desc}</p>
     `;
+  }
+}
+
+// ── Top Tracks with 30s Preview ──────────────────────────────────────────────
+let _currentPlayBtn = null;
+
+function renderTopTracks(tracks) {
+  if (!tracks.length) { hideEl("tracks-section"); return; }
+  const player = $("preview-player");
+
+  $("tracks-list").innerHTML = tracks.map((t, i) => `
+    <div class="track-row" id="track-${i}">
+      <span class="track-num">${i + 1}</span>
+      ${t.album_cover
+        ? `<img class="track-cover" src="${t.album_cover}" alt="">`
+        : `<div class="track-cover"></div>`}
+      <div class="track-info">
+        <div class="track-name">${t.name}</div>
+        <div class="track-pop">Popularity ${t.popularity}/100</div>
+      </div>
+      ${t.preview_url
+        ? `<button class="track-play-btn" id="play-${i}" onclick="togglePreview(${i}, '${t.preview_url}')">▶</button>`
+        : ""}
+      ${t.deezer_url
+        ? `<a class="track-deezer" href="${t.deezer_url}" target="_blank" rel="noopener">Deezer</a>`
+        : ""}
+    </div>
+  `).join("");
+
+  showEl("tracks-section");
+
+  // Stop preview when audio ends
+  if (player) {
+    player.addEventListener("ended", () => {
+      if (_currentPlayBtn) { _currentPlayBtn.textContent = "▶"; _currentPlayBtn.classList.remove("playing"); }
+      _currentPlayBtn = null;
+    }, { once: false });
+  }
+}
+
+function togglePreview(idx, url) {
+  const player = $("preview-player");
+  const btn = $(`play-${idx}`);
+  if (!player || !btn) return;
+
+  if (_currentPlayBtn && _currentPlayBtn !== btn) {
+    _currentPlayBtn.textContent = "▶";
+    _currentPlayBtn.classList.remove("playing");
+  }
+
+  if (player.src === url && !player.paused) {
+    player.pause();
+    btn.textContent = "▶";
+    btn.classList.remove("playing");
+    _currentPlayBtn = null;
+  } else {
+    player.src = url;
+    player.play();
+    btn.textContent = "■";
+    btn.classList.add("playing");
+    _currentPlayBtn = btn;
   }
 }
 

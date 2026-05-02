@@ -14,6 +14,7 @@ import asyncpg
 
 from services.lastfm import get_artist_info, get_similar_artists
 from services.musicbrainz import get_artist_metadata
+from services.deezer import get_top_tracks_with_preview
 from services.setlistfm import get_setlists, build_tour_timeline
 from services.ticketmaster import get_upcoming_events as get_upcoming_ticketmaster
 from services.bandsintown import get_upcoming_events as get_upcoming_bandsintown
@@ -174,7 +175,7 @@ def compute_momentum(
 # ---------------------------------------------------------------------------
 
 async def fetch_artist_data(artist_name: str) -> dict:
-    info, setlists, tm_events, bit_events, yt, spotify, similar_lfm = await asyncio.gather(
+    info, setlists, tm_events, bit_events, yt, spotify, similar_lfm, deezer_tracks = await asyncio.gather(
         get_artist_info(artist_name),
         get_setlists(artist_name),
         get_upcoming_ticketmaster(artist_name),
@@ -182,6 +183,7 @@ async def fetch_artist_data(artist_name: str) -> dict:
         get_artist_youtube_summary(artist_name),
         get_spotify_data(artist_name),
         get_similar_artists(artist_name),
+        get_top_tracks_with_preview(artist_name),
     )
 
     # MusicBrainz after Spotify so we can pass the canonical name (handles accents)
@@ -232,6 +234,25 @@ async def fetch_artist_data(artist_name: str) -> dict:
     # Related artists: Spotify (deprecated in 2024) → Last.fm fallback
     related_artists = spotify.get("related_artists") or similar_lfm
 
+    # Top tracks: Spotify for popularity + name, Deezer enriches with preview URLs
+    sp_tracks = spotify.get("top_tracks", [])
+    dz_by_name = {
+        t["name"].lower(): t for t in deezer_tracks
+    }
+    top_tracks = []
+    for t in sp_tracks:
+        dz = dz_by_name.get(t["name"].lower(), {})
+        top_tracks.append({
+            "name": t["name"],
+            "popularity": t.get("popularity", 0),
+            "preview_url": t.get("preview_url") or dz.get("preview_url"),
+            "deezer_url": dz.get("deezer_url"),
+            "album_cover": dz.get("album_cover"),
+        })
+    # If Spotify has no tracks, use Deezer directly
+    if not top_tracks and deezer_tracks:
+        top_tracks = deezer_tracks
+
     momentum = compute_momentum(
         spotify_followers=followers,
         spotify_popularity=popularity,
@@ -257,7 +278,7 @@ async def fetch_artist_data(artist_name: str) -> dict:
         "spotify_popularity": popularity,
         "spotify_market_count": market_count,
         "related_artists": related_artists,
-        "top_tracks": spotify.get("top_tracks", []),
+        "top_tracks": top_tracks,
         "albums": spotify.get("albums", []),
         "singles": spotify.get("singles", []),
         "country_presence": country_presence,

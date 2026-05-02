@@ -77,6 +77,8 @@ class TopTrack(BaseModel):
     name: str
     popularity: int = 0
     preview_url: Optional[str] = None
+    deezer_url: Optional[str] = None
+    album_cover: Optional[str] = None
 
 
 class Album(BaseModel):
