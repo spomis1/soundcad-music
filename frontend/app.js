@@ -365,9 +365,11 @@ async function doSearch(skipHistory = false) {
     hideEl("loading");
     const box = $("error-box");
     const isLocalhost = _h === "localhost" || _h === "" || _h === "127.0.0.1";
-    box.innerHTML = isLocalhost
-      ? `No results for <b>"${name}"</b>. Check the spelling or try a more well-known artist.<br><small style="opacity:.6">Demo mode: try <em>The Weeknd</em>, <em>Bad Bunny</em>, <em>Taylor Swift</em> or <em>Rosalía</em>.</small>`
-      : `No results for <b>"${name}"</b>. The server may be waking up — <b>wait 30 seconds and try again.</b><br><small style="opacity:.6">Free hosting sleeps after inactivity. First request of the day takes ~30s.</small>`;
+    if (isLocalhost) {
+      box.innerHTML = `No results for <b>"${name}"</b>. Check the spelling or try a more well-known artist.<br><small style="opacity:.6">Demo mode: try <em>The Weeknd</em>, <em>Bad Bunny</em>, <em>Taylor Swift</em> or <em>Rosalía</em>.</small>`;
+    } else {
+      box.innerHTML = `El servidor está despertando ☕ — <b>esperá 30 segundos y probá de nuevo.</b><br><small style="opacity:.6">El hosting gratuito duerme cuando no se usa. El primer pedido del día tarda ~30s.</small><br><br><button onclick="doSearch()" style="margin-top:4px;padding:8px 18px;background:var(--accent);border:none;border-radius:50px;color:#fff;font-weight:700;cursor:pointer;font-size:0.82rem">↩ Reintentar</button>`;
+    }
     showEl("error-box");
   }
 }
@@ -391,6 +393,12 @@ async function doSongSearch(skipHistory = false) {
 
   try {
     const res = await fetch(`${API_BASE}/api/song/${encodeURIComponent(query)}`);
+    if (res.status === 404) {
+      hideEl("loading");
+      $("error-box").innerHTML = `No se encontró la canción <b>"${query}"</b>. Revisá la ortografía e intentá de nuevo.`;
+      showEl("error-box");
+      return;
+    }
     if (!res.ok) throw new Error(`API returned ${res.status}`);
     const data = await res.json();
     hideEl("loading");
@@ -401,9 +409,11 @@ async function doSongSearch(skipHistory = false) {
     hideEl("loading");
     const box = $("error-box");
     const isLocalhost = _h === "localhost" || _h === "" || _h === "127.0.0.1";
-    box.innerHTML = isLocalhost
-      ? `No song found for <b>"${query}"</b>. Make sure the backend is running.<br><small style="opacity:.6">Try: <em>Blinding Lights</em>, <em>Bohemian Rhapsody</em>, <em>Titi Me Preguntó</em></small>`
-      : `No song found for <b>"${query}"</b>. Try adding the artist name: <em>"Blinding Lights The Weeknd"</em>.<br><small style="opacity:.6">Free hosting sleeps after inactivity — first request of the day takes ~30s.</small>`;
+    if (isLocalhost) {
+      box.innerHTML = `No se encontró <b>"${query}"</b>. Verificá que el backend esté corriendo.`;
+    } else {
+      box.innerHTML = `El servidor está despertando ☕ — <b>esperá 30 segundos y probá de nuevo.</b><br><small style="opacity:.6">El hosting gratuito duerme cuando no se usa. El primer pedido del día tarda ~30s.</small><br><br><button onclick="doSongSearch()" style="margin-top:4px;padding:8px 18px;background:var(--accent);border:none;border-radius:50px;color:#fff;font-weight:700;cursor:pointer;font-size:0.82rem">↩ Reintentar</button>`;
+    }
     showEl("error-box");
   }
 }
