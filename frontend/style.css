@@ -1009,22 +1009,82 @@ footer {
 footer a { color: var(--accent2); text-decoration: none; font-weight: 500; }
 footer a:hover { text-decoration: underline; }
 
-/* ─── Responsive ─────────────────────────────────────────────────── */
+/* ─── Responsive — tablet ────────────────────────────────────────── */
 @media (max-width: 900px) {
   .grid { grid-template-columns: 1fr; padding: 16px 20px; }
   .card-wide { grid-column: 1; }
   .artist-header { padding: 24px 20px; gap: 18px; }
   .bio-strip { padding: 14px 20px; }
-  .career-stats { padding: 0 20px; }
+  .career-stats { padding: 0 20px; overflow-x: auto; flex-wrap: nowrap; }
   .stats-row { gap: 18px; }
-  .cs-item { padding: 12px 18px 12px 0; margin-right: 18px; }
+  .cs-item { padding: 12px 18px 12px 0; margin-right: 18px; flex-shrink: 0; }
 }
 
+/* ─── Responsive — mobile ────────────────────────────────────────── */
 @media (max-width: 560px) {
-  header { padding: 0 16px; }
+  /* Header */
+  header { padding: 0 14px; height: 52px; }
   .tagline { display: none; }
-  .artist-meta h1 { font-size: 1.6rem; }
-  .stats-row { gap: 12px; }
-  .stat-val { font-size: 1.2rem; }
-  .momentum-badge { display: none; }  /* collapses on tiny screens */
+  .logo-text { font-size: 1rem; }
+
+  /* Search hero */
+  .search-section { padding: 36px 16px 24px; }
+  .search-section h2 { font-size: 1.25rem; }
+  #search-input { font-size: 0.9rem; padding: 12px 16px; }
+  #search-btn { padding: 12px 18px; font-size: 0.82rem; }
+
+  /* Artist header — stack avatar above text */
+  .artist-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 16px;
+    gap: 14px;
+  }
+  .artist-meta { align-items: center; }
+  .artist-meta h1 { font-size: 1.5rem; letter-spacing: -0.5px; }
+  .artist-origin { justify-content: center; }
+  .tags { justify-content: center; }
+  .stats-row { gap: 16px; justify-content: center; }
+  .stat-val { font-size: 1.25rem; }
+  .artist-links { justify-content: center; }
+
+  /* Momentum badge — move below, full width */
+  .momentum-badge {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 14px 16px;
+    gap: 8px;
+  }
+  .momentum-title { width: 100%; text-align: left; }
+  .momentum-score { font-size: 2rem; }
+  .momentum-bar-wrap { width: 100%; }
+  .momentum-factors { width: 100%; }
+
+  /* Bio */
+  .bio-strip { padding: 12px 16px; }
+  .bio-text { font-size: 0.84rem; }
+
+  /* Career stats — horizontal scroll */
+  .career-stats { padding: 0 16px; overflow-x: auto; flex-wrap: nowrap; }
+  .cs-item { flex-shrink: 0; padding: 10px 16px 10px 0; margin-right: 16px; }
+
+  /* Grid cards */
+  .grid { padding: 12px 16px; gap: 12px; }
+  .card { padding: 16px; }
+
+  /* Albums grid — 3 columns on mobile */
+  .albums-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .album-name { font-size: 0.7rem; }
+  .album-meta { font-size: 0.62rem; }
+  .album-spotify-label { display: none; } /* too cramped */
+
+  /* Singles — hide Spotify badge text on tiny screens */
+  .single-spotify-link { font-size: 0; padding: 6px 8px; }
+  .single-spotify-link svg { width: 14px; height: 14px; }
+
+  /* Footer */
+  footer { font-size: 0.7rem; padding: 20px 16px; }
 }
