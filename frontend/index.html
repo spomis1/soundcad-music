@@ -24,16 +24,18 @@
   <!-- Search -->
   <section class="search-section">
     <h2>Explore any <span>artist</span></h2>
-    <div class="search-box">
-      <input
-        id="search-input"
-        type="text"
-        placeholder="Bad Bunny, Taylor Swift, Rosalía..."
-        autocomplete="off"
-      />
-      <button id="search-btn">Analyze</button>
+    <div class="search-wrap">
+      <div class="search-box">
+        <input
+          id="search-input"
+          type="text"
+          placeholder="Bad Bunny, Taylor Swift, Rosalía..."
+          autocomplete="off"
+        />
+        <button id="search-btn">Analyze</button>
+      </div>
+      <div id="autocomplete-list" class="autocomplete-list hidden"></div>
     </div>
-    <div id="autocomplete-list" class="autocomplete-list hidden"></div>
     <p id="search-hint" class="search-hint">
       Spotify · Last.fm · YouTube · Wikipedia · Apple Music · MusicBrainz
     </p>

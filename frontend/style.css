@@ -163,10 +163,15 @@ body.light .search-section {
   background-clip: text;
 }
 
+.search-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 620px;
+}
+
 .search-box {
   display: flex;
   width: 100%;
-  max-width: 620px;
   border: 1.5px solid var(--border2);
   border-radius: 50px;
   overflow: hidden;
@@ -210,13 +215,13 @@ body.light .search-section {
 
 .autocomplete-list {
   width: 100%;
-  max-width: 620px;
   background: var(--bg2);
   border: 1px solid var(--border2);
   border-radius: var(--radius);
   overflow: hidden;
   position: absolute;
-  top: 118px;
+  top: calc(100% + 4px);
+  left: 0;
   z-index: 100;
   box-shadow: var(--shadow);
 }
@@ -1028,10 +1033,10 @@ footer a:hover { text-decoration: underline; }
   .logo-text { font-size: 1rem; }
 
   /* Search hero */
-  .search-section { padding: 36px 16px 24px; }
-  .search-section h2 { font-size: 1.25rem; }
+  .search-section { padding: 36px 16px 28px; }
+  .search-section h2 { font-size: 1.3rem; }
   #search-input { font-size: 0.9rem; padding: 12px 16px; }
-  #search-btn { padding: 12px 18px; font-size: 0.82rem; }
+  #search-btn { padding: 12px 16px; font-size: 0.82rem; }
 
   /* Artist header — stack avatar above text */
   .artist-header {
@@ -1041,47 +1046,66 @@ footer a:hover { text-decoration: underline; }
     padding: 20px 16px;
     gap: 14px;
   }
-  .artist-meta { align-items: center; }
+  .artist-meta { align-items: center; width: 100%; }
   .artist-meta h1 { font-size: 1.5rem; letter-spacing: -0.5px; }
   .artist-origin { justify-content: center; }
   .tags { justify-content: center; }
-  .stats-row { gap: 16px; justify-content: center; }
-  .stat-val { font-size: 1.25rem; }
+
+  /* Stats — 2×2 grid */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+    width: 100%;
+    margin-bottom: 14px;
+    justify-items: center;
+  }
+  .stat { align-items: center; }
+  .stat-val { font-size: 1.3rem; }
+  .stat-label { font-size: 0.6rem; text-align: center; }
   .artist-links { justify-content: center; }
 
-  /* Momentum badge — move below, full width */
-  .momentum-badge {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    padding: 14px 16px;
-    gap: 8px;
-  }
-  .momentum-title { width: 100%; text-align: left; }
-  .momentum-score { font-size: 2rem; }
-  .momentum-bar-wrap { width: 100%; }
-  .momentum-factors { width: 100%; }
+  /* Momentum badge — full width, keep vertical layout */
+  .momentum-badge { width: 100%; min-width: 0; padding: 14px 16px; gap: 6px; }
+  .momentum-score { font-size: 2.4rem; }
 
   /* Bio */
   .bio-strip { padding: 12px 16px; }
   .bio-text { font-size: 0.84rem; }
 
-  /* Career stats — horizontal scroll */
-  .career-stats { padding: 0 16px; overflow-x: auto; flex-wrap: nowrap; }
-  .cs-item { flex-shrink: 0; padding: 10px 16px 10px 0; margin-right: 16px; }
+  /* Career stats — 2-column wrap, row separators via border-top */
+  .career-stats {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding: 0 16px;
+  }
+  .cs-item {
+    flex: 0 0 50%;
+    flex-shrink: 0;
+    border-right: none;
+    border-top: none;
+    border-bottom: none;
+    margin-right: 0;
+    padding: 10px 8px;
+  }
+  .cs-item:nth-child(even) { padding-left: 12px; border-left: 1px solid var(--border); }
+  .cs-item:nth-child(n+3) { border-top: 1px solid var(--border); }
 
   /* Grid cards */
   .grid { padding: 12px 16px; gap: 12px; }
   .card { padding: 16px; }
 
-  /* Albums grid — 3 columns on mobile */
+  /* Tracks — hide Deezer link, slightly bigger play target */
+  .track-deezer { display: none; }
+  .track-play-btn { width: 34px; height: 34px; }
+
+  /* Albums grid — 3 columns */
   .albums-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .album-name { font-size: 0.7rem; }
   .album-meta { font-size: 0.62rem; }
-  .album-spotify-label { display: none; } /* too cramped */
+  .album-spotify-label { display: none; }
 
-  /* Singles — hide Spotify badge text on tiny screens */
+  /* Singles — icon-only Spotify link */
   .single-spotify-link { font-size: 0; padding: 6px 8px; }
   .single-spotify-link svg { width: 14px; height: 14px; }
 
