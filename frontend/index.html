@@ -23,7 +23,12 @@
 
   <!-- Search -->
   <section class="search-section">
-    <h2>Explore any <span>artist</span></h2>
+    <h2 id="search-heading">Explore any <span>artist</span></h2>
+    <!-- Mode toggle -->
+    <div class="search-mode-toggle">
+      <button class="mode-btn active" id="mode-artist" onclick="setSearchMode('artist')">🎤 Artist</button>
+      <button class="mode-btn" id="mode-song" onclick="setSearchMode('song')">🎵 Song</button>
+    </div>
     <div class="search-box">
       <input
         id="search-input"
@@ -31,7 +36,7 @@
         placeholder="Bad Bunny, Taylor Swift, Rosalía..."
         autocomplete="off"
       />
-      <button id="search-btn">Analyze</button>
+      <button id="search-btn">Search</button>
     </div>
     <div id="autocomplete-list" class="autocomplete-list hidden"></div>
     <p id="search-hint" class="search-hint">
@@ -184,6 +189,62 @@
       </div>
 
     </div>
+  </main>
+
+  <!-- Song Dashboard (hidden until song search) -->
+  <main id="song-dashboard" class="hidden">
+
+    <!-- Song Header -->
+    <section class="song-header">
+      <div class="song-cover-wrap">
+        <img id="song-cover-img" src="" alt="" class="song-cover-img" />
+      </div>
+      <div class="song-meta">
+        <h1 id="song-title" class="song-title"></h1>
+        <div id="song-artists" class="song-artists"></div>
+        <div id="song-album-line" class="song-album-line"></div>
+        <div id="song-tags" class="tags"></div>
+        <!-- Stats row -->
+        <div class="stats-row" id="song-stats-row">
+          <div class="stat">
+            <span class="stat-val" id="song-stat-pop"></span>
+            <span class="stat-label">Spotify Popularity</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val" id="song-stat-plays"></span>
+            <span class="stat-label">Last.fm Plays</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val" id="song-stat-listeners"></span>
+            <span class="stat-label">Last.fm Listeners</span>
+          </div>
+        </div>
+        <!-- Song links & preview -->
+        <div class="song-actions">
+          <button class="song-play-btn hidden" id="song-play-btn" onclick="toggleSongPreview()">▶ Preview</button>
+          <a id="song-spotify-btn" href="#" target="_blank" rel="noopener" class="artist-link-btn spotify-btn hidden">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            Open on Spotify
+          </a>
+        </div>
+        <audio id="song-preview-player" preload="none"></audio>
+      </div>
+    </section>
+
+    <!-- Artist shortcut -->
+    <section class="song-artist-link" id="song-artist-link-section">
+      <p>
+        Want the full profile?
+        <button class="song-artist-btn" id="song-goto-artist-btn">View artist profile →</button>
+      </p>
+    </section>
+
+    <!-- Similar Tracks -->
+    <div class="card card-wide hidden" id="song-similar-section">
+      <h2 class="card-title">Similar Tracks</h2>
+      <div id="song-similar-list" class="song-similar-list"></div>
+    </div>
+
   </main>
 
   <!-- Footer -->

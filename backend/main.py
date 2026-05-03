@@ -349,6 +349,19 @@ async def top_artists():
     return [r["name"] for r in rows]
 
 
+@app.get("/api/song/{song_name}")
+async def get_song(song_name: str):
+    """Search for a song by name (and optionally artist, e.g. 'blinding lights the weeknd')."""
+    from services.song_search import get_song_data
+    try:
+        data = await get_song_data(song_name.strip())
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Song API error: {e}")
+    if not data:
+        raise HTTPException(status_code=404, detail="Song not found")
+    return data
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}

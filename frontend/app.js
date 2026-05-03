@@ -253,6 +253,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// ── Search Mode (artist | song) ───────────────────────────────────────────────
+let _searchMode = "artist";
+
+function setSearchMode(mode) {
+  _searchMode = mode;
+  const artistBtn = $("mode-artist");
+  const songBtn   = $("mode-song");
+  const heading   = $("search-heading");
+  const input     = $("search-input");
+  if (mode === "artist") {
+    artistBtn.classList.add("active");
+    songBtn.classList.remove("active");
+    if (heading) heading.innerHTML = `Explore any <span>artist</span>`;
+    if (input) input.placeholder = "Bad Bunny, Taylor Swift, Rosalía...";
+  } else {
+    songBtn.classList.add("active");
+    artistBtn.classList.remove("active");
+    if (heading) heading.innerHTML = `Explore any <span>song</span>`;
+    if (input) input.placeholder = "Blinding Lights, Bohemian Rhapsody, HUMBLE...";
+  }
+}
+
 // ── Autocomplete ─────────────────────────────────────────────────────────────
 let cachedArtists = [];
 
@@ -297,6 +319,11 @@ $("search-input").addEventListener("keydown", (e) => {
 
 // ── Main search ───────────────────────────────────────────────────────────────
 async function doSearch(skipHistory = false) {
+  if (_searchMode === "song") {
+    await doSongSearch(skipHistory);
+    return;
+  }
+
   const name = $("search-input").value.trim();
   if (!name) return;
 
@@ -305,10 +332,12 @@ async function doSearch(skipHistory = false) {
   if (!skipHistory) {
     const url = new URL(window.location.href);
     url.searchParams.set("artist", name);
-    history.pushState({ artist: name }, "", url.toString());
+    url.searchParams.delete("song");
+    history.pushState({ artist: name, mode: "artist" }, "", url.toString());
   }
 
   hideEl("dashboard");
+  hideEl("song-dashboard");
   hideEl("error-box");
   hideEl("shows-section");
   showEl("loading");
@@ -339,6 +368,42 @@ async function doSearch(skipHistory = false) {
     box.innerHTML = isLocalhost
       ? `No results for <b>"${name}"</b>. Check the spelling or try a more well-known artist.<br><small style="opacity:.6">Demo mode: try <em>The Weeknd</em>, <em>Bad Bunny</em>, <em>Taylor Swift</em> or <em>Rosalía</em>.</small>`
       : `No results for <b>"${name}"</b>. The server may be waking up — <b>wait 30 seconds and try again.</b><br><small style="opacity:.6">Free hosting sleeps after inactivity. First request of the day takes ~30s.</small>`;
+    showEl("error-box");
+  }
+}
+
+// ── Song search ───────────────────────────────────────────────────────────────
+async function doSongSearch(skipHistory = false) {
+  const query = $("search-input").value.trim();
+  if (!query) return;
+
+  if (!skipHistory) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("song", query);
+    url.searchParams.delete("artist");
+    history.pushState({ song: query, mode: "song" }, "", url.toString());
+  }
+
+  hideEl("dashboard");
+  hideEl("song-dashboard");
+  hideEl("error-box");
+  showEl("loading");
+
+  try {
+    const res = await fetch(`${API_BASE}/api/song/${encodeURIComponent(query)}`);
+    if (!res.ok) throw new Error(`API returned ${res.status}`);
+    const data = await res.json();
+    hideEl("loading");
+    renderSongDashboard(data);
+    showEl("song-dashboard");
+    $("song-dashboard").scrollIntoView({ behavior: "smooth" });
+  } catch (err) {
+    hideEl("loading");
+    const box = $("error-box");
+    const isLocalhost = _h === "localhost" || _h === "" || _h === "127.0.0.1";
+    box.innerHTML = isLocalhost
+      ? `No song found for <b>"${query}"</b>. Make sure the backend is running.<br><small style="opacity:.6">Try: <em>Blinding Lights</em>, <em>Bohemian Rhapsody</em>, <em>Titi Me Preguntó</em></small>`
+      : `No song found for <b>"${query}"</b>. Try adding the artist name: <em>"Blinding Lights The Weeknd"</em>.<br><small style="opacity:.6">Free hosting sleeps after inactivity — first request of the day takes ~30s.</small>`;
     showEl("error-box");
   }
 }
@@ -712,6 +777,120 @@ function renderUpcoming(events) {
   }).join("");
 }
 
+// ── Song Dashboard ────────────────────────────────────────────────────────────
+let _songPreviewPlaying = false;
+
+function toggleSongPreview() {
+  const player = $("song-preview-player");
+  const btn    = $("song-play-btn");
+  if (!player || !btn) return;
+  if (_songPreviewPlaying) {
+    player.pause();
+    btn.textContent = "▶ Preview";
+    btn.classList.remove("playing");
+    _songPreviewPlaying = false;
+  } else {
+    player.play();
+    btn.textContent = "■ Stop";
+    btn.classList.add("playing");
+    _songPreviewPlaying = true;
+  }
+}
+
+function renderSongDashboard(d) {
+  // Cover
+  const coverImg = $("song-cover-img");
+  if (d.cover) {
+    coverImg.src = d.cover;
+    coverImg.style.display = "block";
+  } else {
+    coverImg.style.display = "none";
+  }
+
+  // Title & artist(s)
+  $("song-title").textContent = d.name || "—";
+
+  const artistsEl = $("song-artists");
+  const artistLabel = (d.all_artists || []).join(", ") || d.artist_name || "—";
+  artistsEl.innerHTML = `by <strong>${artistLabel}</strong>`;
+
+  // Album line
+  const albumEl = $("song-album-line");
+  const parts = [];
+  if (d.album_name && d.album_name !== d.name) parts.push(d.album_name);
+  if (d.year) parts.push(d.year);
+  albumEl.textContent = parts.join(" · ");
+
+  // Tags
+  $("song-tags").innerHTML = (d.tags || []).slice(0, 5)
+    .map(t => `<span class="tag">${t}</span>`).join("");
+
+  // Stats
+  $("song-stat-pop").textContent = d.popularity ? `${d.popularity}/100` : "—";
+  $("song-stat-plays").textContent = d.lastfm_playcount ? fmt(d.lastfm_playcount) : "—";
+  $("song-stat-listeners").textContent = d.lastfm_listeners ? fmt(d.lastfm_listeners) : "—";
+
+  // Preview player
+  const player = $("song-preview-player");
+  const playBtn = $("song-play-btn");
+  _songPreviewPlaying = false;
+  if (d.preview_url && player && playBtn) {
+    player.src = d.preview_url;
+    player.load();
+    playBtn.textContent = "▶ Preview";
+    playBtn.classList.remove("playing", "hidden");
+    player.onended = () => {
+      playBtn.textContent = "▶ Preview";
+      playBtn.classList.remove("playing");
+      _songPreviewPlaying = false;
+    };
+  } else if (playBtn) {
+    playBtn.classList.add("hidden");
+  }
+
+  // Spotify link
+  const spBtn = $("song-spotify-btn");
+  if (spBtn) {
+    if (d.spotify_url) { spBtn.href = d.spotify_url; spBtn.classList.remove("hidden"); }
+    else { spBtn.classList.add("hidden"); }
+  }
+
+  // "View artist profile" button
+  const gotoBtn = $("song-goto-artist-btn");
+  const artistLinkSection = $("song-artist-link-section");
+  if (gotoBtn && d.artist_name) {
+    gotoBtn.textContent = `View ${d.artist_name} profile →`;
+    gotoBtn.onclick = () => {
+      setSearchMode("artist");
+      $("search-input").value = d.artist_name;
+      doSearch();
+    };
+    if (artistLinkSection) artistLinkSection.classList.remove("hidden");
+  } else if (artistLinkSection) {
+    artistLinkSection.classList.add("hidden");
+  }
+
+  // Similar tracks
+  const simEl = $("song-similar-list");
+  const simSection = $("song-similar-section");
+  if (d.similar_tracks && d.similar_tracks.length && simEl && simSection) {
+    simEl.innerHTML = d.similar_tracks.map(t => `
+      <div class="similar-track-row" onclick="$('search-input').value='${
+        (t.name + " " + t.artist).replace(/'/g, "\\'")
+      }';doSearch()">
+        <div class="sim-track-info">
+          <span class="sim-track-name">${t.name}</span>
+          <span class="sim-track-artist">${t.artist}</span>
+        </div>
+        ${t.playcount ? `<span class="sim-track-plays">${fmt(t.playcount)} plays</span>` : ""}
+      </div>
+    `).join("");
+    simSection.classList.remove("hidden");
+  } else if (simSection) {
+    simSection.classList.add("hidden");
+  }
+}
+
 // ── Related Artists ───────────────────────────────────────────────────────────
 function renderRelatedArtists(artists) {
   if (!artists.length) { hideEl("related-section"); return; }
@@ -727,27 +906,42 @@ function renderRelatedArtists(artists) {
 loadAutocomplete();
 
 // ── URL param auto-load ───────────────────────────────────────────────────────
-// If the URL has ?artist=xxx, search automatically on page load.
-// This makes links like index.html?artist=bad+bunny work directly.
+// Supports ?artist=xxx and ?song=xxx for direct links.
 (function () {
   const params = new URLSearchParams(window.location.search);
   const artist = params.get("artist");
-  if (artist) {
+  const song   = params.get("song");
+  if (song) {
+    setSearchMode("song");
+    $("search-input").value = song;
+    doSearch(true);
+  } else if (artist) {
+    setSearchMode("artist");
     $("search-input").value = artist;
-    doSearch(true);  // true = don't push to history (we're already on the right URL)
+    doSearch(true);
   }
 })();
 
 // Handle browser back/forward buttons
 window.addEventListener("popstate", (e) => {
-  const artist = e.state?.artist || new URLSearchParams(window.location.search).get("artist") || "";
-  if (artist) {
+  const state  = e.state || {};
+  const params = new URLSearchParams(window.location.search);
+  const song   = state.song   || params.get("song")   || "";
+  const artist = state.artist || params.get("artist") || "";
+
+  if (song) {
+    setSearchMode("song");
+    $("search-input").value = song;
+    doSearch(true);
+  } else if (artist) {
+    setSearchMode("artist");
     $("search-input").value = artist;
     doSearch(true);
   } else {
-    // Back to homepage (no artist)
+    // Back to homepage
     $("search-input").value = "";
     hideEl("dashboard");
+    hideEl("song-dashboard");
     hideEl("error-box");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
