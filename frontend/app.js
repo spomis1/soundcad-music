@@ -3,7 +3,7 @@
 const _h = window.location.hostname;
 const API_BASE = (_h === "localhost" || _h === "" || _h === "127.0.0.1")
   ? "http://localhost:8000"
-  : "https://soundcard-music-api.onrender.com";  // ← update with your Render URL
+  : "https://soundcad-music.onrender.com";
 
 // ── Demo data (works offline, no backend needed) ─────────────────────────────
 const DEMO_DATA = {
