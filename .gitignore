@@ -15,3 +15,6 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Notas personales (no subir al repo)
+MI_PROYECTO.html
