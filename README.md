@@ -316,7 +316,7 @@ $1.500/mes  → Competidor directo de Chartmetric.
 
 ## 👤 Autor
 
-**Sebastian Pomi** — Data Scientist, Madrid  
+**Sebastian Pomi** — Data Engineer, Buenos Aires  
 [GitHub](https://github.com/spomis1) · [LinkedIn](https://linkedin.com/in/sebastianpomi)
 
 ---
