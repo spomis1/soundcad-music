@@ -1009,6 +1009,176 @@ footer {
 footer a { color: var(--accent2); text-decoration: none; font-weight: 500; }
 footer a:hover { text-decoration: underline; }
 
+/* ─── Hero / Search section additions ───────────────────────────── */
+.hero-badge {
+  background: rgba(124,58,237,0.12);
+  border: 1px solid rgba(168,85,247,0.25);
+  border-radius: 50px;
+  color: var(--accent3);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 14px;
+  margin-bottom: 4px;
+}
+
+.hero-sub {
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-align: center;
+  max-width: 480px;
+  line-height: 1.5;
+  margin-top: -4px;
+}
+
+/* Featured row */
+.featured-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: center;
+  max-width: 620px;
+  margin-top: 4px;
+}
+
+.featured-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  align-self: center;
+  margin-right: 2px;
+}
+
+.featured-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  color: var(--text2);
+  font-size: 0.76rem;
+  font-weight: 500;
+  padding: 5px 13px;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  white-space: nowrap;
+}
+
+.featured-btn:hover {
+  background: var(--bg4);
+  border-color: var(--accent2);
+  color: var(--text);
+}
+
+/* Share button */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 50px;
+  color: var(--text2);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 6px 13px;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+.share-btn:hover { background: var(--bg4); border-color: var(--accent2); color: var(--text); }
+.share-btn.share-copied { border-color: var(--green); color: var(--green); }
+
+/* Empty state banner */
+.empty-state-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.25);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin: 16px 40px 0;
+  font-size: 0.85rem;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+.empty-state-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.empty-state-missing { font-size: 0.78rem; color: var(--muted); }
+
+/* About section */
+.about-section {
+  max-width: 900px;
+  margin: 40px auto 0;
+  padding: 0 40px;
+  border-top: 1px solid var(--border);
+}
+
+.about-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  padding: 16px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: color var(--transition);
+}
+
+.about-toggle:hover { color: var(--text2); }
+.about-chevron { font-size: 1rem; }
+
+.about-body {
+  padding-bottom: 32px;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.about-block-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent2);
+  margin-bottom: 8px;
+}
+
+.about-block p {
+  font-size: 0.84rem;
+  color: var(--text2);
+  line-height: 1.65;
+}
+
+.about-sources {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.about-sources li {
+  font-size: 0.82rem;
+  color: var(--text2);
+  padding-left: 10px;
+  border-left: 2px solid var(--border2);
+  line-height: 1.5;
+}
+
+.about-sources a { color: var(--accent2); text-decoration: none; }
+.about-sources a:hover { text-decoration: underline; }
+
 /* ─── Sample DNA ─────────────────────────────────────────────────── */
 .samples-group {
   margin-bottom: 18px;
@@ -1292,7 +1462,7 @@ footer a:hover { text-decoration: underline; }
   flex-shrink: 0;
 }
 
-/* ─── Responsive — tablet ────────────────────────────────────────── */
+/* ─── Responsive — tablet (≤ 900px) ─────────────────────────────── */
 @media (max-width: 900px) {
   .grid { grid-template-columns: 1fr; padding: 16px 20px; }
   .card-wide { grid-column: 1; }
@@ -1301,81 +1471,117 @@ footer a:hover { text-decoration: underline; }
   .career-stats { padding: 0 20px; overflow-x: auto; flex-wrap: nowrap; }
   .stats-row { gap: 18px; }
   .cs-item { padding: 12px 18px 12px 0; margin-right: 18px; flex-shrink: 0; }
+  .about-section { padding: 0 20px; }
+  .empty-state-banner { margin: 12px 20px 0; }
+  #song-dashboard { padding: 20px; }
+  .about-grid { grid-template-columns: 1fr; gap: 16px; }
 }
 
-/* ─── Responsive — mobile ────────────────────────────────────────── */
+/* ─── Responsive — mobile (≤ 560px) ─────────────────────────────── */
 @media (max-width: 560px) {
-  /* Header */
-  header { padding: 0 14px; height: 52px; }
+  /* ── Header ── */
+  header { padding: 0 14px; height: 50px; }
   .tagline { display: none; }
   .logo-text { font-size: 1rem; }
 
-  /* Search hero */
-  .search-section { padding: 36px 16px 24px; }
-  .search-section h2 { font-size: 1.25rem; }
-  #search-input { font-size: 0.9rem; padding: 12px 16px; }
-  #search-btn { padding: 12px 18px; font-size: 0.82rem; }
+  /* ── Search hero ── */
+  .search-section { padding: 32px 16px 20px; gap: 10px; }
+  .search-section h2 { font-size: 1.3rem; }
+  .hero-sub { font-size: 0.8rem; }
+  .search-mode-toggle { padding: 3px; }
+  .mode-btn { padding: 5px 14px; font-size: 0.76rem; }
+  .search-box { border-radius: 40px; }
+  #search-input { font-size: 0.88rem; padding: 11px 16px; }
+  #search-btn { padding: 11px 16px; font-size: 0.8rem; }
+  .featured-row { gap: 5px; }
+  .featured-btn { font-size: 0.72rem; padding: 4px 10px; }
+  .autocomplete-list { top: 190px; }
 
-  /* Artist header — stack avatar above text */
+  /* ── Artist header ── */
   .artist-header {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 20px 16px;
-    gap: 14px;
+    padding: 18px 16px;
+    gap: 12px;
   }
-  .artist-meta { align-items: center; }
-  .artist-meta h1 { font-size: 1.5rem; letter-spacing: -0.5px; }
+  .artist-meta { align-items: center; min-width: 0; }
+  .artist-meta h1 { font-size: 1.45rem; letter-spacing: -0.5px; }
   .artist-origin { justify-content: center; }
-  .tags { justify-content: center; }
-  .stats-row { gap: 16px; justify-content: center; }
-  .stat-val { font-size: 1.25rem; }
-  .artist-links { justify-content: center; }
+  .tags { justify-content: center; margin-bottom: 12px; }
+  .stats-row { gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .stat-val { font-size: 1.2rem; }
+  .artist-links { justify-content: center; flex-wrap: wrap; }
+  .share-btn { font-size: 0.72rem; padding: 5px 10px; }
 
-  /* Momentum badge — move below, full width */
+  /* ── Momentum badge ── */
   .momentum-badge {
     width: 100%;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: space-between;
-    padding: 14px 16px;
+    padding: 12px 14px;
     gap: 8px;
   }
   .momentum-title { width: 100%; text-align: left; }
-  .momentum-score { font-size: 2rem; }
+  .momentum-score { font-size: 1.9rem; }
   .momentum-bar-wrap { width: 100%; }
   .momentum-factors { width: 100%; }
 
-  /* Bio */
+  /* ── Bio ── */
   .bio-strip { padding: 12px 16px; }
-  .bio-text { font-size: 0.84rem; }
+  .bio-text { font-size: 0.83rem; }
 
-  /* Career stats — horizontal scroll */
+  /* ── Career stats ── */
   .career-stats { padding: 0 16px; overflow-x: auto; flex-wrap: nowrap; }
-  .cs-item { flex-shrink: 0; padding: 10px 16px 10px 0; margin-right: 16px; }
+  .cs-item { flex-shrink: 0; padding: 10px 14px 10px 0; margin-right: 14px; }
+  .cs-val { font-size: 1rem; }
 
-  /* Grid cards */
-  .grid { padding: 12px 16px; gap: 12px; }
-  .card { padding: 16px; }
+  /* ── Grid cards ── */
+  .grid { padding: 12px 16px; gap: 10px; }
+  .card { padding: 14px; }
+  .card-title { font-size: 0.65rem; margin-bottom: 10px; }
 
-  /* Albums grid — 3 columns on mobile */
-  .albums-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .album-name { font-size: 0.7rem; }
-  .album-meta { font-size: 0.62rem; }
-  .album-spotify-label { display: none; } /* too cramped */
+  /* ── Albums: 3 col ── */
+  .albums-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .album-name { font-size: 0.68rem; }
+  .album-meta { font-size: 0.6rem; }
+  .album-spotify-label { display: none; }
 
-  /* Singles — hide Spotify badge text on tiny screens */
-  .single-spotify-link { font-size: 0; padding: 6px 8px; }
+  /* ── Singles ── */
+  .single-spotify-link { font-size: 0; padding: 5px 7px; }
   .single-spotify-link svg { width: 14px; height: 14px; }
+  .single-name { font-size: 0.82rem; }
 
-  /* Footer */
-  footer { font-size: 0.7rem; padding: 20px 16px; }
+  /* ── Track list ── */
+  .track-name { font-size: 0.82rem; }
+  .track-deezer { display: none; }
 
-  /* Song dashboard mobile */
-  #song-dashboard { padding: 16px; }
-  .song-header { padding: 16px; gap: 16px; flex-direction: column; align-items: center; text-align: center; }
-  .song-cover-img { width: 120px; height: 120px; }
-  .song-title { font-size: 1.4rem; }
-  .song-actions { justify-content: center; }
-  .song-stats-row { justify-content: center; }
+  /* ── Song dashboard ── */
+  #song-dashboard { padding: 14px; }
+  .song-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px;
+    gap: 14px;
+  }
+  .song-cover-img { width: 110px; height: 110px; }
+  .song-title { font-size: 1.3rem; }
+  .song-actions { justify-content: center; flex-wrap: wrap; }
+  .song-artist-link { font-size: 0.8rem; padding: 10px 14px; }
+  .song-similar-list .similar-track-row { padding: 9px 10px; }
+  .sim-track-name { font-size: 0.82rem; }
+
+  /* ── Empty state ── */
+  .empty-state-banner { margin: 10px 16px 0; font-size: 0.8rem; padding: 10px 12px; }
+
+  /* ── About ── */
+  .about-section { padding: 0 16px; }
+  .about-grid { grid-template-columns: 1fr; gap: 14px; }
+  .about-block p, .about-sources li { font-size: 0.8rem; }
+
+  /* ── Footer ── */
+  footer { font-size: 0.68rem; padding: 18px 16px; }
+  footer p { line-height: 2; }
 }

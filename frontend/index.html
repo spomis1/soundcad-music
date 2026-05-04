@@ -21,27 +21,25 @@
     <button id="theme-toggle" title="Toggle light/dark mode">🌙</button>
   </header>
 
-  <!-- Search -->
+  <!-- Search / Hero -->
   <section class="search-section">
+    <div class="hero-badge">Music Intelligence</div>
     <h2 id="search-heading">Explore any <span>artist</span></h2>
+    <p class="hero-sub">Stats, tours, discography, samples &amp; industry momentum — all in one place.</p>
+
     <!-- Mode toggle -->
     <div class="search-mode-toggle">
       <button class="mode-btn active" id="mode-artist" onclick="setSearchMode('artist')">🎤 Artist</button>
       <button class="mode-btn" id="mode-song" onclick="setSearchMode('song')">🎵 Song</button>
     </div>
     <div class="search-box">
-      <input
-        id="search-input"
-        type="text"
-        placeholder="Bad Bunny, Taylor Swift, Rosalía..."
-        autocomplete="off"
-      />
+      <input id="search-input" type="text" placeholder="Bad Bunny, Taylor Swift, Rosalía..." autocomplete="off" />
       <button id="search-btn">Search</button>
     </div>
     <div id="autocomplete-list" class="autocomplete-list hidden"></div>
-    <p id="search-hint" class="search-hint">
-      Spotify · Last.fm · YouTube · Wikipedia · Apple Music · MusicBrainz
-    </p>
+
+    <!-- Featured -->
+    <div class="featured-row" id="featured-row"></div>
   </section>
 
   <!-- Loading state -->
@@ -85,6 +83,10 @@
         </div>
         <!-- Streaming links -->
         <div class="artist-links" id="artist-links">
+          <button class="share-btn" onclick="shareUrl()" title="Copiar link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share
+          </button>
           <a id="artist-spotify-btn" href="#" target="_blank" rel="noopener" class="artist-link-btn spotify-btn hidden">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
             Spotify
@@ -222,6 +224,10 @@
         <!-- Song links & preview -->
         <div class="song-actions">
           <button class="song-play-btn hidden" id="song-play-btn" onclick="toggleSongPreview()">▶ Preview</button>
+          <button class="share-btn" onclick="shareUrl()" title="Copiar link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share
+          </button>
           <a id="song-spotify-btn" href="#" target="_blank" rel="noopener" class="artist-link-btn spotify-btn hidden">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
             Open on Spotify
@@ -252,6 +258,47 @@
     </div>
 
   </main>
+
+  <!-- About section -->
+  <section class="about-section" id="about-section">
+    <button class="about-toggle" onclick="toggleAbout()">
+      <span>About this project</span>
+      <span class="about-chevron" id="about-chevron">▾</span>
+    </button>
+    <div class="about-body hidden" id="about-body">
+      <div class="about-grid">
+        <div class="about-block">
+          <div class="about-block-title">¿Qué hace?</div>
+          <p>SoundCard agrega datos de 7 APIs en tiempo real para darte un perfil completo de cualquier artista o canción: seguidores, giras históricas, discografía, videos, Wikipedia, samples y un Momentum Score propio.</p>
+        </div>
+        <div class="about-block">
+          <div class="about-block-title">Momentum Score</div>
+          <p>Score 0–100 calculado a partir de: <b>Spotify followers</b> (30 pts), <b>popularidad</b> en Spotify (30 pts), <b>views</b> de YouTube top-5 (20 pts) e <b>historial de giras</b> vía Setlist.fm (20 pts).</p>
+        </div>
+        <div class="about-block">
+          <div class="about-block-title">Fuentes de datos</div>
+          <ul class="about-sources">
+            <li><b>Spotify</b> — followers, popularidad, discografía, top tracks</li>
+            <li><b>Last.fm</b> — plays totales, oyentes, artistas similares</li>
+            <li><b>YouTube</b> — top videos del canal oficial, views</li>
+            <li><b>Wikipedia</b> — biografía, pageviews mensuales</li>
+            <li><b>MusicBrainz</b> — país, tipo de artista, samples</li>
+            <li><b>Setlist.fm</b> — historial completo de giras</li>
+            <li><b>Apple Music</b> — link directo al artista</li>
+          </ul>
+        </div>
+        <div class="about-block">
+          <div class="about-block-title">Stack técnico</div>
+          <ul class="about-sources">
+            <li><b>Backend</b> — Python + FastAPI en Render.com</li>
+            <li><b>Base de datos</b> — PostgreSQL en Neon.tech (cache 7 días)</li>
+            <li><b>Frontend</b> — Vanilla JS en GitHub Pages</li>
+            <li><b>Código</b> — <a href="https://github.com/spomis1/soundcad-music" target="_blank" rel="noopener">github.com/spomis1/soundcad-music</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Footer -->
   <footer>

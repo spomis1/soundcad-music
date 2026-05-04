@@ -251,7 +251,53 @@ document.addEventListener("DOMContentLoaded", () => {
       updateThemeIcon();
     });
   }
+  renderFeatured();
 });
+
+// ── Featured artists / songs (homepage) ──────────────────────────────────────
+const FEATURED_ARTISTS = ["Bad Bunny", "Taylor Swift", "The Weeknd", "Rosalía", "Kendrick Lamar", "Drake", "Shakira", "Dua Lipa"];
+const FEATURED_SONGS   = ["Blinding Lights", "Titi Me Preguntó", "HUMBLE.", "Anti-Hero", "Bohemian Rhapsody", "God's Plan"];
+
+function renderFeatured() {
+  const row = $("featured-row");
+  if (!row) return;
+  const isArtist = _searchMode === "artist";
+  const items = isArtist ? FEATURED_ARTISTS : FEATURED_SONGS;
+  row.innerHTML = `<span class="featured-label">Try:</span>` +
+    items.map(n => `<button class="featured-btn" onclick="quickSearch('${n.replace(/'/g,"\\'")}')">
+      ${isArtist ? "🎤" : "🎵"} ${n}
+    </button>`).join("");
+}
+
+function quickSearch(name) {
+  $("search-input").value = name;
+  doSearch();
+}
+
+// ── Share button ─────────────────────────────────────────────────────────────
+function shareUrl() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    const btns = document.querySelectorAll(".share-btn");
+    btns.forEach(b => { b.textContent = "✓ Copiado!"; b.classList.add("share-copied"); });
+    setTimeout(() => btns.forEach(b => {
+      b.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share`;
+      b.classList.remove("share-copied");
+    }), 2000);
+  }).catch(() => {
+    // Fallback for browsers without clipboard API
+    prompt("Copiá este link:", url);
+  });
+}
+
+// ── About section ─────────────────────────────────────────────────────────────
+function toggleAbout() {
+  const body    = $("about-body");
+  const chevron = $("about-chevron");
+  if (!body) return;
+  body.classList.toggle("hidden");
+  if (chevron) chevron.textContent = body.classList.contains("hidden") ? "▾" : "▴";
+}
 
 // ── Search Mode (artist | song) ───────────────────────────────────────────────
 let _searchMode = "artist";
@@ -273,33 +319,57 @@ function setSearchMode(mode) {
     if (heading) heading.innerHTML = `Explore any <span>song</span>`;
     if (input) input.placeholder = "Blinding Lights, Bohemian Rhapsody, HUMBLE...";
   }
+  renderFeatured();
 }
 
 // ── Autocomplete ─────────────────────────────────────────────────────────────
 let cachedArtists = [];
 
+let cachedSongs = []; // [{name, artist}]
+
 async function loadAutocomplete() {
-  // Always seed with demo artists so autocomplete works offline
+  // Seed with demo artists
   cachedArtists = Object.values(DEMO_DATA).map(d => d.name);
   try {
-    const res = await fetch(`${API_BASE}/api/top-artists`);
-    if (res.ok) {
-      const live = await res.json();
+    const [artistRes, songRes] = await Promise.allSettled([
+      fetch(`${API_BASE}/api/top-artists`),
+      fetch(`${API_BASE}/api/top-songs`),
+    ]);
+    if (artistRes.status === "fulfilled" && artistRes.value.ok) {
+      const live = await artistRes.value.json();
       cachedArtists = [...new Set([...cachedArtists, ...live])];
     }
-  } catch { /* silent — demo artists already loaded */ }
+    if (songRes.status === "fulfilled" && songRes.value.ok) {
+      cachedSongs = await songRes.value.json();
+    }
+  } catch { /* silent */ }
 }
 
 $("search-input").addEventListener("input", (e) => {
   const q = e.target.value.toLowerCase().trim();
   const list = $("autocomplete-list");
-  if (!q || cachedArtists.length === 0) { list.classList.add("hidden"); return; }
-  const matches = cachedArtists.filter((a) => a.toLowerCase().includes(q)).slice(0, 6);
-  if (!matches.length) { list.classList.add("hidden"); return; }
-  list.innerHTML = matches
-    .map((a) => `<div class="autocomplete-item" data-name="${a}">${a}</div>`)
-    .join("");
-  list.classList.remove("hidden");
+  if (!q) { list.classList.add("hidden"); return; }
+
+  if (_searchMode === "song") {
+    const matches = cachedSongs
+      .filter(s => s.name && s.name.toLowerCase().includes(q))
+      .slice(0, 6);
+    if (!matches.length) { list.classList.add("hidden"); return; }
+    list.innerHTML = matches.map(s =>
+      `<div class="autocomplete-item" data-name="${s.name}">
+        🎵 <b>${s.name}</b>${s.artist ? ` <span style="opacity:.5;font-size:.85em">— ${s.artist}</span>` : ""}
+       </div>`
+    ).join("");
+    list.classList.remove("hidden");
+  } else {
+    if (!cachedArtists.length) { list.classList.add("hidden"); return; }
+    const matches = cachedArtists.filter(a => a.toLowerCase().includes(q)).slice(0, 6);
+    if (!matches.length) { list.classList.add("hidden"); return; }
+    list.innerHTML = matches
+      .map(a => `<div class="autocomplete-item" data-name="${a}">🎤 ${a}</div>`)
+      .join("");
+    list.classList.remove("hidden");
+  }
 });
 
 document.addEventListener("click", (e) => {
@@ -496,6 +566,36 @@ function renderDashboard(d) {
   renderAlbums(d.albums || []);
   renderSingles(d.singles || []);
   renderRelatedArtists(d.related_artists || []);
+  renderEmptyState(d);
+}
+
+// ── Empty state (artistas con poca data) ──────────────────────────────────────
+function renderEmptyState(d) {
+  let existing = $("empty-state-banner");
+  if (existing) existing.remove();
+
+  const missing = [];
+  if (!d.top_tracks?.length)    missing.push("top tracks (Spotify)");
+  if (!d.top_videos?.length)    missing.push("videos (YouTube)");
+  if (!d.albums?.length && !d.singles?.length) missing.push("discografía (Spotify)");
+  if (!d.bio)                   missing.push("biografía (Wikipedia)");
+
+  // Only show banner if more than half the sections are empty
+  if (missing.length < 3) return;
+
+  const banner = document.createElement("div");
+  banner.id = "empty-state-banner";
+  banner.className = "empty-state-banner";
+  banner.innerHTML = `
+    <span class="empty-state-icon">⚠️</span>
+    <div>
+      <strong>${d.name}</strong> tiene poca data disponible en las APIs.
+      Puede ser un artista muy nuevo, local o con nombre poco conocido.<br>
+      <span class="empty-state-missing">Sin datos: ${missing.join(" · ")}</span>
+    </div>`;
+
+  const dashboard = $("dashboard");
+  if (dashboard) dashboard.insertBefore(banner, dashboard.firstChild);
 }
 
 // ── Bio ───────────────────────────────────────────────────────────────────────

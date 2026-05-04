@@ -44,6 +44,13 @@ async def init_db(pool: asyncpg.Pool) -> None:
             cached_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
     """)
+    await pool.execute("""
+        CREATE TABLE IF NOT EXISTS song_cache (
+            query_lower TEXT PRIMARY KEY,
+            data        JSONB NOT NULL,
+            cached_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
 
 
 @asynccontextmanager
@@ -351,15 +358,47 @@ async def top_artists():
 
 @app.get("/api/song/{song_name}")
 async def get_song(song_name: str):
-    """Search for a song by name (and optionally artist, e.g. 'blinding lights the weeknd')."""
+    """Search for a song by name. Results are cached for 7 days."""
     from services.song_search import get_song_data
+    pool = await get_pool()
+    key = song_name.strip().lower()
+
+    row = await pool.fetchrow(
+        "SELECT data, cached_at FROM song_cache WHERE query_lower = $1", key
+    )
+    if row:
+        age_days = (datetime.now(timezone.utc) - row["cached_at"]).days
+        if age_days < CACHE_TTL_DAYS:
+            return json.loads(row["data"])
+
     try:
         data = await get_song_data(song_name.strip())
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Song API error: {e}")
     if not data:
         raise HTTPException(status_code=404, detail="Song not found")
+
+    await pool.execute(
+        """
+        INSERT INTO song_cache (query_lower, data, cached_at)
+        VALUES ($1, $2, NOW())
+        ON CONFLICT (query_lower) DO UPDATE
+            SET data = EXCLUDED.data, cached_at = EXCLUDED.cached_at
+        """,
+        key,
+        json.dumps(data),
+    )
     return data
+
+
+@app.get("/api/top-songs")
+async def top_songs():
+    """Returns recently cached song names for autocomplete."""
+    pool = await get_pool()
+    rows = await pool.fetch(
+        "SELECT data->>'name' as name, data->>'artist_name' as artist FROM song_cache ORDER BY cached_at DESC LIMIT 50"
+    )
+    return [{"name": r["name"], "artist": r["artist"]} for r in rows if r["name"]]
 
 
 @app.get("/health")
