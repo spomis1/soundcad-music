@@ -684,8 +684,8 @@ body.light .tag {
 /* ─── Albums ─────────────────────────────────────────────────────── */
 .albums-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 14px;
 }
 
 .album-card {
@@ -1542,10 +1542,14 @@ footer a:hover { text-decoration: underline; }
   .card { padding: 14px; }
   .card-title { font-size: 0.65rem; margin-bottom: 10px; }
 
-  /* ── Albums: 3 col ── */
-  .albums-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .album-name { font-size: 0.68rem; }
-  .album-meta { font-size: 0.6rem; }
+  /* ── Albums: 3 col forzado ── */
+  .albums-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 7px;
+  }
+  .album-card { padding: 5px 5px 8px; }
+  .album-name { font-size: 0.66rem; margin-top: 5px; }
+  .album-meta { font-size: 0.58rem; }
   .album-spotify-label { display: none; }
 
   /* ── Singles ── */
