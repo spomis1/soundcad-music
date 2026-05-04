@@ -880,6 +880,9 @@ function renderSongDashboard(d) {
     artistLinkSection.classList.add("hidden");
   }
 
+  // Sample DNA (MusicBrainz)
+  renderSampleDNA(d);
+
   // Similar tracks
   const simEl = $("song-similar-list");
   const simSection = $("song-similar-section");
@@ -899,6 +902,76 @@ function renderSongDashboard(d) {
   } else if (simSection) {
     simSection.classList.add("hidden");
   }
+}
+
+// ── Sample DNA ────────────────────────────────────────────────────────────────
+function renderSampleDNA(d) {
+  const section  = $("song-samples-section");
+  const content  = $("song-samples-content");
+  if (!section || !content) return;
+
+  const used   = d.samples_used   || [];
+  const byList = d.sampled_by     || [];
+  const interp = d.interpolations || [];
+  const mbUrl  = d.mb_url         || "";
+
+  const hasData = used.length || byList.length || interp.length;
+
+  if (!hasData) {
+    // Still show the section but with a note
+    content.innerHTML = `
+      <p class="samples-empty">
+        No hay datos de samples registrados en MusicBrainz para esta canción.
+        ${mbUrl ? `<a href="${mbUrl}" target="_blank" rel="noopener" class="samples-mb-link">¿Sabés algo? Contribuí en MusicBrainz ↗</a>` : ""}
+      </p>`;
+    section.classList.remove("hidden");
+    return;
+  }
+
+  const sampleRowHTML = (s, clickMode) => {
+    const label = [s.name, s.artist ? `— ${s.artist}` : "", s.year ? `(${s.year})` : ""].filter(Boolean).join(" ");
+    const searchQ = `${s.name} ${s.artist}`.trim();
+    return `
+      <div class="sample-row" onclick="$('search-input').value='${searchQ.replace(/'/g,"\\'")}';setSearchMode('${clickMode}');doSearch()" title="Buscar esta canción">
+        <span class="sample-icon">${clickMode === "song" ? "🎵" : "🎵"}</span>
+        <div class="sample-info">
+          <span class="sample-name">${s.name}</span>
+          ${s.artist ? `<span class="sample-artist">${s.artist}</span>` : ""}
+        </div>
+        ${s.year ? `<span class="sample-year">${s.year}</span>` : ""}
+        <span class="sample-search-hint">buscar →</span>
+      </div>`;
+  };
+
+  let html = "";
+
+  if (used.length) {
+    html += `<div class="samples-group">
+      <div class="samples-group-label">⬇ Esta canción samplea</div>
+      ${used.map(s => sampleRowHTML(s, "song")).join("")}
+    </div>`;
+  }
+
+  if (interp.length) {
+    html += `<div class="samples-group">
+      <div class="samples-group-label">🎼 Interpolaciones</div>
+      ${interp.map(s => sampleRowHTML(s, "song")).join("")}
+    </div>`;
+  }
+
+  if (byList.length) {
+    html += `<div class="samples-group">
+      <div class="samples-group-label">⬆ Ha sido sampleada por</div>
+      ${byList.map(s => sampleRowHTML(s, "song")).join("")}
+    </div>`;
+  }
+
+  if (mbUrl) {
+    html += `<p class="samples-source">Fuente: <a href="${mbUrl}" target="_blank" rel="noopener" class="samples-mb-link">MusicBrainz ↗</a></p>`;
+  }
+
+  content.innerHTML = html;
+  section.classList.remove("hidden");
 }
 
 // ── Related Artists ───────────────────────────────────────────────────────────
