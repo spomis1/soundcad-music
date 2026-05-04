@@ -684,7 +684,7 @@ body.light .tag {
 /* ─── Albums ─────────────────────────────────────────────────────── */
 .albums-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 14px;
 }
 
@@ -1475,6 +1475,16 @@ footer a:hover { text-decoration: underline; }
   .empty-state-banner { margin: 12px 20px 0; }
   #song-dashboard { padding: 20px; }
   .about-grid { grid-template-columns: 1fr; gap: 16px; }
+
+  /* ── Albums: 3 columns on all phones/tablets ── */
+  .albums-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .album-card { padding: 6px 6px 9px; }
+  .album-name { font-size: 0.7rem; margin-top: 6px; }
+  .album-meta { font-size: 0.6rem; }
+  .album-spotify-label { display: none; }
 }
 
 /* ─── Responsive — mobile (≤ 560px) ─────────────────────────────── */
@@ -1542,14 +1552,11 @@ footer a:hover { text-decoration: underline; }
   .card { padding: 14px; }
   .card-title { font-size: 0.65rem; margin-bottom: 10px; }
 
-  /* ── Albums: 3 col forzado ── */
-  .albums-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 7px;
-  }
-  .album-card { padding: 5px 5px 8px; }
-  .album-name { font-size: 0.66rem; margin-top: 5px; }
-  .album-meta { font-size: 0.58rem; }
+  /* ── Albums: tighten gap even more on tiny screens ── */
+  .albums-grid { gap: 5px; }
+  .album-card { padding: 4px 4px 7px; }
+  .album-name { font-size: 0.63rem; margin-top: 4px; }
+  .album-meta { font-size: 0.56rem; }
   .album-spotify-label { display: none; }
 
   /* ── Singles ── */
